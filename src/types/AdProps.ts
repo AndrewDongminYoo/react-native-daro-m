@@ -1,18 +1,17 @@
-import type { AdLoadFailedInfo } from "./AdInfo";
+import type { AdLoadFailedInfo } from './AdInfo';
 
-import type { AdInfo } from "./AdInfo";
+import type { AdInfo } from './AdInfo';
 
 export type AdProps = {
+  adUnitId: string;
 
-    adUnitId: string;
+  placement?: string | null;
 
-    placement?: string | null;
+  onAdLoaded?: (adInfo: AdInfo) => void;
 
-    onAdLoaded?: (adInfo: AdInfo) => void;
+  onAdLoadFailed?: (error: AdLoadFailedInfo) => void;
 
-    onAdLoadFailed?: (error: AdLoadFailedInfo) => void;
+  onAdClicked?: (adInfo: AdInfo) => void;
 
-    onAdClicked?: (adInfo: AdInfo) => void;
-
-    onAdImpressionRecorded?: (adInfo: AdInfo) => void;
+  onAdImpressionRecorded?: (adInfo: AdInfo) => void;
 };

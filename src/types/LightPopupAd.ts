@@ -1,8 +1,11 @@
-import type { ColorValue } from "react-native";
-import type { FullScreenAdType } from "./FullScreenAd";
+import type { ColorValue } from 'react-native';
+import type { FullScreenAdType } from './FullScreenAd';
 
 export interface LightPopupAdType extends FullScreenAdType {
-  setLightPopupAdConfiguration: (adUnitId: string, configuration: LightPopupAdConfiguration) => void;
+  setLightPopupAdConfiguration: (
+    adUnitId: string,
+    configuration: LightPopupAdConfiguration
+  ) => void;
 }
 
 export interface LightPopupAdConfiguration {

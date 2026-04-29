@@ -1,6 +1,13 @@
 import * as React from 'react';
 import { useCallback, useContext, useEffect, useMemo, useRef } from 'react';
-import type { ImageProps, StyleProp, TextProps, TextStyle, ImageStyle, ViewProps } from 'react-native';
+import type {
+  ImageProps,
+  StyleProp,
+  TextProps,
+  TextStyle,
+  ImageStyle,
+  ViewProps,
+} from 'react-native';
 import { findNodeHandle, Image, Platform, Text, View } from 'react-native';
 import { NativeAdViewContext } from './NativeAdViewProvider';
 
@@ -62,32 +69,37 @@ const useStyleProps = (style: StyleProp<TextStyle>): StyleProps => {
       fontWeight: styleObj.fontWeight as string,
       fontFamily: styleObj.fontFamily as string,
       color: styleObj.color as string,
-      
+
       // 2. 배경색
       backgroundColor: styleObj.backgroundColor as string,
-      
+
       // 3. 정렬
-      textAlign: styleObj.textAlign as 'auto' | 'left' | 'right' | 'center' | 'justify',
-      
+      textAlign: styleObj.textAlign as
+        | 'auto'
+        | 'left'
+        | 'right'
+        | 'center'
+        | 'justify',
+
       // 6. 투명도
       opacity: styleObj.opacity as number,
-      
+
       // 7. 숨김
       display: styleObj.display as 'none' | 'flex',
-      
+
       // 10. 모서리 둥글게
       borderRadius: styleObj.borderRadius as number,
-      
+
       // 11. 테두리
       borderWidth: styleObj.borderWidth as number,
       borderColor: styleObj.borderColor as string,
-      
+
       // 12. 그림자
       shadowColor: styleObj.shadowColor as string,
       shadowOffset: styleObj.shadowOffset as { width: number; height: number },
       shadowOpacity: styleObj.shadowOpacity as number,
       shadowRadius: styleObj.shadowRadius as number,
-      
+
       // 13. 여백
       padding: styleObj.padding as number,
       margin: styleObj.margin as number,
@@ -99,21 +111,21 @@ const useStyleProps = (style: StyleProp<TextStyle>): StyleProps => {
       marginRight: styleObj.marginRight as number,
       marginBottom: styleObj.marginBottom as number,
       marginLeft: styleObj.marginLeft as number,
-      
+
       // 14. 위치
       position: styleObj.position as 'absolute' | 'relative',
       top: styleObj.top as number,
       right: styleObj.right as number,
       bottom: styleObj.bottom as number,
       left: styleObj.left as number,
-      
+
       // 15. 크기
       width: styleObj.width as number,
       height: styleObj.height as number,
-      
+
       // 16. 변환
       transform: styleObj.transform as any[],
-      
+
       // 17. 기타
       zIndex: styleObj.zIndex as number,
       overflow: styleObj.overflow as 'visible' | 'hidden' | 'scroll',
@@ -155,7 +167,12 @@ const useImageStyleProps = (style: StyleProp<ImageStyle>): ImageStyleProps => {
       height: styleObj.height as number,
 
       // Image 전용 스타일 속성
-      resizeMode: styleObj.resizeMode as 'cover' | 'contain' | 'stretch' | 'repeat' | 'center',
+      resizeMode: styleObj.resizeMode as
+        | 'cover'
+        | 'contain'
+        | 'stretch'
+        | 'repeat'
+        | 'center',
       tintColor: styleObj.tintColor as string,
       overlayColor: styleObj.overlayColor as string,
       aspectRatio: styleObj.aspectRatio as number,
@@ -164,7 +181,11 @@ const useImageStyleProps = (style: StyleProp<ImageStyle>): ImageStyleProps => {
 };
 
 // 네이티브 뷰 속성 설정 커스텀 훅
-const useNativeAdViewProps = (ref: React.RefObject<any>, nativePropKey: string, styleProps?: StyleProps) => {
+const useNativeAdViewProps = (
+  ref: React.RefObject<any>,
+  nativePropKey: string,
+  styleProps?: StyleProps
+) => {
   const { nativeAdView } = useContext(NativeAdViewContext);
 
   const setNativeProps = useCallback(() => {
@@ -172,11 +193,11 @@ const useNativeAdViewProps = (ref: React.RefObject<any>, nativePropKey: string, 
     const props: any = {
       [nativePropKey]: findNodeHandle(ref.current),
     };
-    
+
     if (styleProps) {
       props[`${nativePropKey}StyleProps`] = styleProps;
     }
-    
+
     nativeAdView?.setNativeProps(props);
   }, [nativeAdView, ref, nativePropKey, styleProps]);
 
@@ -190,7 +211,7 @@ const AdTextView = (props: TextProps & { nativePropKey: string }) => {
   const { nativePropKey, ...restProps } = props;
   const textRef = useRef<Text | null>(null);
   const styleProps = useStyleProps(props.style);
-  
+
   useNativeAdViewProps(textRef, nativePropKey, styleProps);
 
   return <Text {...restProps} ref={textRef} />;
@@ -207,9 +228,9 @@ export const BodyView = (props: TextProps) => {
 export const CallToActionView = (props: TextProps) => {
   const callToActionRef = useRef<Text | null>(null);
   const styleProps = useStyleProps(props.style);
-  
+
   useNativeAdViewProps(callToActionRef, 'callToActionView', styleProps);
-  
+
   // TouchableOpacity disables clicking on certain Android devices.
   if (Platform.OS === 'android') {
     return <Text {...props} ref={callToActionRef} />;
@@ -236,4 +257,3 @@ export const MediaView = (props: ViewProps) => {
 
   return <View {...props} ref={viewRef} />;
 };
-

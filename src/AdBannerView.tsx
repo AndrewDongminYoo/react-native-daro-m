@@ -1,15 +1,32 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { findNodeHandle, NativeModules, requireNativeComponent, UIManager, View, type DimensionValue, type NativeMethods, type ViewProps } from 'react-native';
-import type { AdBannerViewHandler, AdBannerViewProps } from './types/AdBannerViewProps';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
+import {
+  findNodeHandle,
+  NativeModules,
+  requireNativeComponent,
+  UIManager,
+  View,
+  type DimensionValue,
+  type NativeMethods,
+  type ViewProps,
+} from 'react-native';
+import type {
+  AdBannerViewHandler,
+  AdBannerViewProps,
+} from './types/AdBannerViewProps';
 import type { AdNativeEvent } from './types/AdEvent';
 import type { AdInfo, AdLoadFailedInfo } from './types/AdInfo';
 
 const { DaroMModule } = NativeModules;
 
-const {
-  BANNER_AD_FORMAT_LABEL,
-  MREC_AD_FORMAT_LABEL,
-} = DaroMModule.getConstants();
+const { BANNER_AD_FORMAT_LABEL, MREC_AD_FORMAT_LABEL } =
+  DaroMModule.getConstants();
 
 export enum AdFormat {
   BANNER = BANNER_AD_FORMAT_LABEL,
@@ -24,7 +41,9 @@ type AdViewNativeEvents = {
 };
 
 const ComponentName = 'DaroMAdBannerView';
-const AdViewComponent = requireNativeComponent<AdBannerViewProps & ViewProps & AdViewNativeEvents>(ComponentName);
+const AdViewComponent = requireNativeComponent<
+  AdBannerViewProps & ViewProps & AdViewNativeEvents
+>(ComponentName);
 type AdViewType = React.Component<AdBannerViewProps> & NativeMethods;
 
 type SizeKey = 'width' | 'height';
@@ -35,11 +54,15 @@ const ADVIEW_SIZE = {
   mrec: { width: 300, height: 250 },
 };
 
-export const AdBannerView = forwardRef<AdBannerViewHandler, AdBannerViewProps & ViewProps>(function AdBannerView(
+export const AdBannerView = forwardRef<
+  AdBannerViewHandler,
+  AdBannerViewProps & ViewProps
+>(function AdBannerView(
   {
     adUnitId,
     adFormat,
     placement,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     loadOnMount = true,
     isVisible = true,
     onAdLoaded,
@@ -51,7 +74,6 @@ export const AdBannerView = forwardRef<AdBannerViewHandler, AdBannerViewProps & 
   },
   ref
 ) {
-
   const adFormatSize = useRef<SizeRecord>({});
   const adViewRef = useRef<AdViewType | null>(null);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
@@ -62,7 +84,7 @@ export const AdBannerView = forwardRef<AdBannerViewHandler, AdBannerViewProps & 
         findNodeHandle(adViewRef.current),
         // @ts-ignore: Issue in RN ts defs
         UIManager.getViewManagerConfig(ComponentName).Commands.loadAd,
-        [],
+        []
       );
     }
   }, []);
@@ -76,15 +98,23 @@ export const AdBannerView = forwardRef<AdBannerViewHandler, AdBannerViewProps & 
   useEffect(() => {
     (async () => {
       if (adFormat === AdFormat.BANNER) {
-        adFormatSize.current = { width: ADVIEW_SIZE.banner.width, height: ADVIEW_SIZE.banner.height };
+        adFormatSize.current = {
+          width: ADVIEW_SIZE.banner.width,
+          height: ADVIEW_SIZE.banner.height,
+        };
       } else {
-        adFormatSize.current = { width: ADVIEW_SIZE.mrec.width, height: ADVIEW_SIZE.mrec.height };
+        adFormatSize.current = {
+          width: ADVIEW_SIZE.mrec.width,
+          height: ADVIEW_SIZE.mrec.height,
+        };
       }
       const initialized = await DaroMModule.isInitialized();
       setIsInitialized(initialized);
 
       if (!initialized) {
-        console.warn('AdBannerView is mounted before the initialization of the DaroM React Native module');
+        console.warn(
+          'AdBannerView is mounted before the initialization of the DaroM React Native module'
+        );
       }
     })();
   }, [adFormat]);
@@ -135,6 +165,7 @@ export const AdBannerView = forwardRef<AdBannerViewHandler, AdBannerViewProps & 
       onAdLoadFailedEvent={onAdLoadFailedEvent}
       onAdClickedEvent={onAdClickedEvent}
       onAdImpressionRecordedEvent={onAdImpressionRecordedEvent}
-      {...otherProps} />
+      {...otherProps}
+    />
   );
 });

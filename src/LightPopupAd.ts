@@ -1,8 +1,15 @@
-import { NativeModules } from "react-native";
-import { addEventListener, removeEventListener } from "./EventEmitter";
-import type { AdDisplayFailedInfo, AdInfo, AdLoadFailedInfo } from "./types/AdInfo";
-import type { LightPopupAdConfiguration, LightPopupAdType } from "./types/LightPopupAd";
-import tinycolor from "tinycolor2";
+import { NativeModules } from 'react-native';
+import { addEventListener, removeEventListener } from './EventEmitter';
+import type {
+  AdDisplayFailedInfo,
+  AdInfo,
+  AdLoadFailedInfo,
+} from './types/AdInfo';
+import type {
+  LightPopupAdConfiguration,
+  LightPopupAdType,
+} from './types/LightPopupAd';
+import tinycolor from 'tinycolor2';
 
 const { DaroMModule } = NativeModules;
 
@@ -29,12 +36,12 @@ const showAd = (adUnitId: string): void => {
 };
 
 function colorToHex(color: any): string | undefined {
-  if (typeof color === "number") {
+  if (typeof color === 'number') {
     // react-native에서 number로 오는 경우 (ex: processColor)
     // #AARRGGBB로 변환
-    return `#${color.toString(16).padStart(8, "0")}`.toUpperCase();
+    return `#${color.toString(16).padStart(8, '0')}`.toUpperCase();
   }
-  if (typeof color === "string") {
+  if (typeof color === 'string') {
     const tc = tinycolor(color);
     if (tc.isValid()) {
       // alpha가 1이면 #RRGGBB, 아니면 #AARRGGBB
@@ -45,8 +52,8 @@ function colorToHex(color: any): string | undefined {
       } else {
         // #AARRGGBB
         return (
-          "#" +
-          alpha.toString(16).padStart(2, "0").toUpperCase() +
+          '#' +
+          alpha.toString(16).padStart(2, '0').toUpperCase() +
           tc.toHex().toUpperCase()
         );
       }
@@ -55,20 +62,36 @@ function colorToHex(color: any): string | undefined {
   return undefined;
 }
 
-const setLightPopupAdConfiguration = (adUnitId: string, configuration: LightPopupAdConfiguration): void => {
+const setLightPopupAdConfiguration = (
+  adUnitId: string,
+  configuration: LightPopupAdConfiguration
+): void => {
   const config = { ...configuration };
 
   // color 관련 필드만 hex string으로 변환
-  if (config.backgroundColor) config.backgroundColor = colorToHex(config.backgroundColor);
-  if (config.cardViewBackgroundColor) config.cardViewBackgroundColor = colorToHex(config.cardViewBackgroundColor);
-  if (config.adMarkLabelTextColor) config.adMarkLabelTextColor = colorToHex(config.adMarkLabelTextColor);
-  if (config.adMarkLabelBackgroundColor) config.adMarkLabelBackgroundColor = colorToHex(config.adMarkLabelBackgroundColor);
+  if (config.backgroundColor)
+    config.backgroundColor = colorToHex(config.backgroundColor);
+  if (config.cardViewBackgroundColor)
+    config.cardViewBackgroundColor = colorToHex(config.cardViewBackgroundColor);
+  if (config.adMarkLabelTextColor)
+    config.adMarkLabelTextColor = colorToHex(config.adMarkLabelTextColor);
+  if (config.adMarkLabelBackgroundColor)
+    config.adMarkLabelBackgroundColor = colorToHex(
+      config.adMarkLabelBackgroundColor
+    );
   if (config.closeButtonText) config.closeButtonText = config.closeButtonText;
-  if (config.closeButtonTextColor) config.closeButtonTextColor = colorToHex(config.closeButtonTextColor);
-  if (config.titleTextColor) config.titleTextColor = colorToHex(config.titleTextColor);
-  if (config.bodyTextColor) config.bodyTextColor = colorToHex(config.bodyTextColor);
-  if (config.ctaButtonTextColor) config.ctaButtonTextColor = colorToHex(config.ctaButtonTextColor);
-  if (config.ctaButtonBackgroundColor) config.ctaButtonBackgroundColor = colorToHex(config.ctaButtonBackgroundColor);
+  if (config.closeButtonTextColor)
+    config.closeButtonTextColor = colorToHex(config.closeButtonTextColor);
+  if (config.titleTextColor)
+    config.titleTextColor = colorToHex(config.titleTextColor);
+  if (config.bodyTextColor)
+    config.bodyTextColor = colorToHex(config.bodyTextColor);
+  if (config.ctaButtonTextColor)
+    config.ctaButtonTextColor = colorToHex(config.ctaButtonTextColor);
+  if (config.ctaButtonBackgroundColor)
+    config.ctaButtonBackgroundColor = colorToHex(
+      config.ctaButtonBackgroundColor
+    );
 
   DaroMModule.setLightPopupAdConfiguration(adUnitId, config);
 };
@@ -81,7 +104,9 @@ const removeAdLoadedEventListener = (): void => {
   removeEventListener(ON_LIGHTPOPUP_LOADED_EVENT);
 };
 
-const addAdLoadFailedEventListener = (listener: (errorInfo: AdLoadFailedInfo) => void): void => {
+const addAdLoadFailedEventListener = (
+  listener: (errorInfo: AdLoadFailedInfo) => void
+): void => {
   addEventListener(ON_LIGHTPOPUP_LOAD_FAILED_EVENT, listener);
 };
 
@@ -89,7 +114,9 @@ const removeAdLoadFailedEventListener = (): void => {
   removeEventListener(ON_LIGHTPOPUP_LOAD_FAILED_EVENT);
 };
 
-const addAdClickedEventListener = (listener: (adInfo: AdInfo) => void): void => {
+const addAdClickedEventListener = (
+  listener: (adInfo: AdInfo) => void
+): void => {
   addEventListener(ON_LIGHTPOPUP_CLICKED_EVENT, listener);
 };
 
@@ -97,7 +124,9 @@ const removeAdClickedEventListener = (): void => {
   removeEventListener(ON_LIGHTPOPUP_CLICKED_EVENT);
 };
 
-const addAdDisplayedEventListener = (listener: (adInfo: AdInfo) => void): void => {
+const addAdDisplayedEventListener = (
+  listener: (adInfo: AdInfo) => void
+): void => {
   addEventListener(ON_LIGHTPOPUP_DISPLAYED_EVENT, listener);
 };
 
@@ -105,7 +134,9 @@ const removeAdDisplayedEventListener = (): void => {
   removeEventListener(ON_LIGHTPOPUP_DISPLAYED_EVENT);
 };
 
-const addAdFailedToDisplayEventListener = (listener: (errorInfo: AdDisplayFailedInfo) => void): void => {
+const addAdFailedToDisplayEventListener = (
+  listener: (errorInfo: AdDisplayFailedInfo) => void
+): void => {
   addEventListener(ON_LIGHTPOPUP_AD_FAILED_TO_DISPLAY_EVENT, listener);
 };
 
@@ -121,7 +152,9 @@ const removeAdHiddenEventListener = (): void => {
   removeEventListener(ON_LIGHTPOPUP_HIDDEN_EVENT);
 };
 
-const addAdImpressionRecordedListener = (listener: (adInfo: AdInfo) => void): void => {
+const addAdImpressionRecordedListener = (
+  listener: (adInfo: AdInfo) => void
+): void => {
   addEventListener(ON_LIGHTPOPUP_AD_IMPRESSION_RECORDED, listener);
 };
 

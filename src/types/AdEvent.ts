@@ -1,6 +1,15 @@
-import type { AdInfo, AdLoadFailedInfo, AdDisplayFailedInfo, AdRewardInfo } from './AdInfo';
+import type {
+  AdInfo,
+  AdLoadFailedInfo,
+  AdDisplayFailedInfo,
+  AdRewardInfo,
+} from './AdInfo';
 
-export type AdEventObject = AdInfo | AdLoadFailedInfo | AdDisplayFailedInfo | AdRewardInfo;
+export type AdEventObject =
+  | AdInfo
+  | AdLoadFailedInfo
+  | AdDisplayFailedInfo
+  | AdRewardInfo;
 
 // Defines a generic event listener for the pragrammatic methods to receive an event from the native module.
 export type AdEventListener<T extends AdEventObject> = (event: T) => void;

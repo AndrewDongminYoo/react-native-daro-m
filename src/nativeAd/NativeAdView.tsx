@@ -1,9 +1,32 @@
-import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { findNodeHandle, NativeModules, requireNativeComponent, UIManager, View, type ViewProps } from 'react-native';
+import {
+  forwardRef,
+  useCallback,
+  useContext,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
+import {
+  findNodeHandle,
+  NativeModules,
+  requireNativeComponent,
+  UIManager,
+  View,
+  type ViewProps,
+} from 'react-native';
 import type { AdNativeEvent } from '../types/AdEvent';
 import type { AdInfo, AdLoadFailedInfo } from '../types/AdInfo';
-import type { NativeAdViewHandler, NativeAdViewProps } from '../types/NativeAdViewProps';
-import { NativeAdViewContext, NativeAdViewProvider, type NativeAdViewContextType, type NativeAdViewType } from './NativeAdViewProvider';
+import type {
+  NativeAdViewHandler,
+  NativeAdViewProps,
+} from '../types/NativeAdViewProps';
+import {
+  NativeAdViewContext,
+  NativeAdViewProvider,
+  type NativeAdViewContextType,
+  type NativeAdViewType,
+} from './NativeAdViewProvider';
 
 const { DaroMModule } = NativeModules;
 
@@ -15,9 +38,14 @@ type NativeAdViewNativeEvents = {
 };
 
 const ComponentName = 'DaroMNativeAdView';
-const NativeAdViewComponent = requireNativeComponent<NativeAdViewProps & ViewProps & NativeAdViewNativeEvents>(ComponentName);
+const NativeAdViewComponent = requireNativeComponent<
+  NativeAdViewProps & ViewProps & NativeAdViewNativeEvents
+>(ComponentName);
 
-export const NativeAdView = forwardRef<NativeAdViewHandler, NativeAdViewProps & ViewProps>(function NativeAdView(props, ref) {
+export const NativeAdView = forwardRef<
+  NativeAdViewHandler,
+  NativeAdViewProps & ViewProps
+>(function NativeAdView(props, ref) {
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
   useEffect(() => {
@@ -25,7 +53,9 @@ export const NativeAdView = forwardRef<NativeAdViewHandler, NativeAdViewProps & 
       const result = await DaroMModule.isInitialized();
       setIsInitialized(result);
       if (!result) {
-        console.warn('NativeAdView is mounted before the initialization of the DaroM React Native module.');
+        console.warn(
+          'NativeAdView is mounted before the initialization of the DaroM React Native module.'
+        );
       }
     };
 
@@ -41,15 +71,30 @@ export const NativeAdView = forwardRef<NativeAdViewHandler, NativeAdViewProps & 
     <NativeAdViewProvider>
       <NativeAdViewImpl {...props} ref={ref} />
     </NativeAdViewProvider>
-  );  
+  );
 });
 
-const NativeAdViewImpl = forwardRef<NativeAdViewHandler, NativeAdViewProps & ViewProps>(function NativeAdViewImpl(
-  { adUnitId, onAdLoaded, onAdLoadFailed, onAdClicked, onAdImpressionRecorded, children, style, loadOnMount = true, ...otherProps },
+const NativeAdViewImpl = forwardRef<
+  NativeAdViewHandler,
+  NativeAdViewProps & ViewProps
+>(function NativeAdViewImpl(
+  {
+    adUnitId,
+    onAdLoaded,
+    onAdLoadFailed,
+    onAdClicked,
+    onAdImpressionRecorded,
+    children,
+    style,
+    loadOnMount = true,
+    ...otherProps
+  },
   ref
 ) {
   // Context provides functions to manage native ad and native ad view state
-  const { setNativeAdView } = useContext(NativeAdViewContext) as NativeAdViewContextType;
+  const { setNativeAdView } = useContext(
+    NativeAdViewContext
+  ) as NativeAdViewContextType;
 
   const nativeAdViewRef = useRef<NativeAdViewType | null>(null);
 
@@ -60,7 +105,7 @@ const NativeAdViewImpl = forwardRef<NativeAdViewHandler, NativeAdViewProps & Vie
         findNodeHandle(nativeAdViewRef.current),
         // @ts-ignore: Issue in RN ts defs
         UIManager.getViewManagerConfig(ComponentName).Commands.loadAd,
-        [],
+        []
       );
     }
   }, []);

@@ -1,4 +1,3 @@
-
 export enum ErrorCode {
-	UNSPECIFIED = 0
+  UNSPECIFIED = 0,
 }
