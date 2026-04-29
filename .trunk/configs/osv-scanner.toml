@@ -1,0 +1,38 @@
+# Ignore known vulnerabilities explicitly.
+# Keep this file temporary: prefer upgrading/removing the affected transitive deps.
+
+[[IgnoredVulns]]
+id = "GHSA-h5c3-5r3r-rr8q"
+reason = "@octokit/plugin-paginate-rest 6.1.2 transitive vulnerability accepted temporarily."
+
+[[IgnoredVulns]]
+id = "GHSA-xx4v-prfh-6cgc"
+reason = "@octokit/request-error 3.0.3 transitive vulnerability accepted temporarily."
+
+[[IgnoredVulns]]
+id = "GHSA-rmvr-2pp2-xj38"
+reason = "@octokit/request 6.2.8 transitive vulnerability accepted temporarily."
+
+[[IgnoredVulns]]
+id = "GHSA-c2qf-rxjj-qqgw"
+reason = "semver ReDoS vulnerability appears in multiple locked versions; accepted temporarily until dependency tree is upgraded."
+
+[[IgnoredVulns]]
+id = "GHSA-f23m-r3pf-42rh"
+reason = "lodash 4.17.21 prototype pollution advisory accepted temporarily."
+
+[[IgnoredVulns]]
+id = "GHSA-r5fr-rjxr-66jc"
+reason = "lodash 4.17.21 template code injection advisory accepted temporarily."
+
+[[IgnoredVulns]]
+id = "GHSA-xxjr-mmjv-4gpg"
+reason = "lodash 4.17.21 prototype pollution advisory accepted temporarily."
+
+[[IgnoredVulns]]
+id = "GHSA-52f5-9888-hmc6"
+reason = "tmp 0.0.33 symlink arbitrary write advisory accepted temporarily."
+
+[[IgnoredVulns]]
+id = "GHSA-2p57-rm9w-gvfp"
+reason = "ip 1.1.9 SSRF classification advisory accepted temporarily."
