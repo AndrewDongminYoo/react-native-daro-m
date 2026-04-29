@@ -4,12 +4,10 @@ import os.log
 
 @objc(DaroMModule)
 class DaroMModule: RCTEventEmitter {
-
     // 중앙집중식 로거 - 다른 파일에서도 사용 가능
     static let logger = Logger(subsystem: "com.darom.react-native", category: "DaroMModule")
 
     enum Event: String, CaseIterable {
-
         // MARK: - Interstitial Ad
 
         case onInterstitialLoadedEvent = "ON_INTERSTITIAL_LOADED_EVENT"
@@ -41,14 +39,15 @@ class DaroMModule: RCTEventEmitter {
         case onAppOpenAdHiddenEvent = "ON_APPOPEN_AD_HIDDEN_EVENT"
         case onAppOpenAdImpressionRecordedEvent = "ON_APPOPEN_AD_IMPRESSION_RECORDED"
 
-      // MARK: - LightPopup Ad
-      case onLightPopupLoadedEvent = "ON_LIGHTPOPUP_LOADED_EVENT"
-      case onLightPopupLoadFailedEvent = "ON_LIGHTPOPUP_LOAD_FAILED_EVENT"
-      case onLightPopupClickedEvent = "ON_LIGHTPOPUP_CLICKED_EVENT"
-      case onLightPopupDisplayedEvent = "ON_LIGHTPOPUP_DISPLAYED_EVENT"
-      case onLightPopupAdFailedToDisplayEvent = "ON_LIGHTPOPUP_AD_FAILED_TO_DISPLAY_EVENT"
-      case onLightPopupHiddenEvent = "ON_LIGHTPOPUP_HIDDEN_EVENT"
-      case onLightPopupAdImpressionRecordedEvent = "ON_LIGHTPOPUP_AD_IMPRESSION_RECORDED"
+        // MARK: - LightPopup Ad
+
+        case onLightPopupLoadedEvent = "ON_LIGHTPOPUP_LOADED_EVENT"
+        case onLightPopupLoadFailedEvent = "ON_LIGHTPOPUP_LOAD_FAILED_EVENT"
+        case onLightPopupClickedEvent = "ON_LIGHTPOPUP_CLICKED_EVENT"
+        case onLightPopupDisplayedEvent = "ON_LIGHTPOPUP_DISPLAYED_EVENT"
+        case onLightPopupAdFailedToDisplayEvent = "ON_LIGHTPOPUP_AD_FAILED_TO_DISPLAY_EVENT"
+        case onLightPopupHiddenEvent = "ON_LIGHTPOPUP_HIDDEN_EVENT"
+        case onLightPopupAdImpressionRecordedEvent = "ON_LIGHTPOPUP_AD_IMPRESSION_RECORDED"
 
         static var supportedEvents: [String] {
             allCases.map(\.rawValue)
@@ -68,9 +67,9 @@ class DaroMModule: RCTEventEmitter {
         var value: String {
             switch self {
             case .bannerAdFormatLabel:
-              return DaroAdFormat.banner.rawValue
+                return DaroAdFormat.banner.rawValue
             case .mrecAdFormatLabel:
-              return DaroAdFormat.mrec.rawValue
+                return DaroAdFormat.mrec.rawValue
             }
         }
 
@@ -81,100 +80,100 @@ class DaroMModule: RCTEventEmitter {
         }
     }
 
-  static var sdkInitialized: Bool = false
+    static var sdkInitialized: Bool = false
     // 광고 인스턴스 저장소
-  internal var interstitials: [String: InterstitialAd] = [:]
-  internal var rewardedAds: [String: RewardedAd] = [:]
-  internal var appOpenAds: [String: AppOpenAd] = [:]
-  internal var lightPopups: [String: LightPopupAd] = [:]
-  internal var lightPopupConfigurations: [String: [String: Any]] = [:]
-  internal var savedAdditionalSafeAreaInsets: UIEdgeInsets?
+    var interstitials: [String: InterstitialAd] = [:]
+    var rewardedAds: [String: RewardedAd] = [:]
+    var appOpenAds: [String: AppOpenAd] = [:]
+    var lightPopups: [String: LightPopupAd] = [:]
+    var lightPopupConfigurations: [String: [String: Any]] = [:]
+    var savedAdditionalSafeAreaInsets: UIEdgeInsets?
 
     // MARK: - SDK 초기화 및 설정
 
     @objc(isInitialized::)
-    func isInitialized(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-      resolve(Self.sdkInitialized)
+    func isInitialized(resolve: RCTPromiseResolveBlock, reject _: RCTPromiseRejectBlock) {
+        resolve(Self.sdkInitialized)
     }
 
-  @objc(initializeSdk::)
-  func initializeSdk(
-    resolve: @escaping RCTPromiseResolveBlock,
-    reject: @escaping RCTPromiseRejectBlock
-  ) {
-    // 이미 초기화되었는지 확인
-    if Self.sdkInitialized {
-      Self.logger.debug("SDK already initialized, returning success")
-      resolve(Void())
-      return
-    }
+    @objc(initializeSdk::)
+    func initializeSdk(
+        resolve: @escaping RCTPromiseResolveBlock,
+        reject: @escaping RCTPromiseRejectBlock
+    ) {
+        // 이미 초기화되었는지 확인
+        if Self.sdkInitialized {
+            Self.logger.debug("SDK already initialized, returning success")
+            resolve(())
+            return
+        }
 
-    // 초기화 진행
-    DaroAds.shared.logLevel = .debug
-    DaroAds.shared.initialized { error in
-      if let error {
-        Self.logger.error("SDK initialization failed: \(error.localizedDescription)")
-        reject("INIT_ERROR", error.localizedDescription, error)
-      } else {
-        Self.sdkInitialized = true
-        Self.logger.info("SDK initialized successfully")
-        resolve(Void())
-      }
+        // 초기화 진행
+        DaroAds.shared.logLevel = .debug
+        DaroAds.shared.initialized { error in
+            if let error {
+                Self.logger.error("SDK initialization failed: \(error.localizedDescription)")
+                reject("INIT_ERROR", error.localizedDescription, error)
+            } else {
+                Self.sdkInitialized = true
+                Self.logger.info("SDK initialized successfully")
+                resolve(())
+            }
+        }
     }
-  }
 
     @objc(showMediationDebugger::)
-    func showMediationDebugger(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-      ALSdk.shared().showMediationDebugger()
-      resolve(Void())
+    func showMediationDebugger(resolve: RCTPromiseResolveBlock, reject _: RCTPromiseRejectBlock) {
+        ALSdk.shared().showMediationDebugger()
+        resolve(())
     }
 
     @objc(setUserId:::)
-    func setUserId(userId: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-      DaroAds.shared.userId = userId
-         resolve(Void())
+    func setUserId(userId: String, resolve: RCTPromiseResolveBlock, reject _: RCTPromiseRejectBlock) {
+        DaroAds.shared.userId = userId
+        resolve(())
     }
 
-  class InterstitialAd {
-    let loader: DaroInterstitialAdLoader
-    var loadedAd: DaroInterstitialAd?
+    class InterstitialAd {
+        let loader: DaroInterstitialAdLoader
+        var loadedAd: DaroInterstitialAd?
 
-    init(loader: DaroInterstitialAdLoader) {
-      self.loader = loader
+        init(loader: DaroInterstitialAdLoader) {
+            self.loader = loader
+        }
     }
-  }
 
-  class RewardedAd {
-    let loader: DaroRewardedAdLoader
-    var loadedAd: DaroRewardedAd?
+    class RewardedAd {
+        let loader: DaroRewardedAdLoader
+        var loadedAd: DaroRewardedAd?
 
-    init(loader: DaroRewardedAdLoader) {
-      self.loader = loader
+        init(loader: DaroRewardedAdLoader) {
+            self.loader = loader
+        }
     }
-  }
 
-  class AppOpenAd {
-    let loader: DaroAppOpenAdLoader
-    var loadedAd: DaroAppOpenAd?
+    class AppOpenAd {
+        let loader: DaroAppOpenAdLoader
+        var loadedAd: DaroAppOpenAd?
 
-    init(loader: DaroAppOpenAdLoader) {
-      self.loader = loader
+        init(loader: DaroAppOpenAdLoader) {
+            self.loader = loader
+        }
     }
-  }
 
-  class LightPopupAd {
-    let loader: DaroLightPopupAdLoader
-    var loadedAd: DaroLightPopupAd?
+    class LightPopupAd {
+        let loader: DaroLightPopupAdLoader
+        var loadedAd: DaroLightPopupAd?
 
-    init(loader: DaroLightPopupAdLoader) {
-      self.loader = loader
+        init(loader: DaroLightPopupAdLoader) {
+            self.loader = loader
+        }
     }
-  }
 }
 
 // MARK: - Constants
-extension DaroMModule {
 
+extension DaroMModule {
     // https://reactnative.dev/docs/legacy/native-modules-ios#sending-events-to-javascript
     // Sending Events to JavaScript
     override func supportedEvents() -> [String]! {
@@ -184,39 +183,40 @@ extension DaroMModule {
     // https://reactnative.dev/docs/legacy/native-modules-ios#exporting-constants
     // Exporting Constants
     override func constantsToExport() -> [AnyHashable: Any]! {
-        Event.constantsToExports.merging(Constants.constantsToExports) { (_, new) in new }
+        Event.constantsToExports.merging(Constants.constantsToExports) { _, new in new }
     }
 }
 
 // MARK: - Helpers
-extension DaroMModule {
-  func sendEvent(with event: Event, body: Any?) {
-    sendEvent(withName: event.rawValue, body: body)
-  }
 
-  func restoreAdditionalSafeAreaInsets() {
-    guard let savedInsets = savedAdditionalSafeAreaInsets else { return }
-    DispatchQueue.main.async {
-      UIApplication.shared.windows.first?.rootViewController?.additionalSafeAreaInsets = savedInsets
+extension DaroMModule {
+    func sendEvent(with event: Event, body: Any?) {
+        sendEvent(withName: event.rawValue, body: body)
     }
-    savedAdditionalSafeAreaInsets = nil
-  }
+
+    func restoreAdditionalSafeAreaInsets() {
+        guard let savedInsets = savedAdditionalSafeAreaInsets else { return }
+        DispatchQueue.main.async {
+            UIApplication.shared.windows.first?.rootViewController?.additionalSafeAreaInsets = savedInsets
+        }
+        savedAdditionalSafeAreaInsets = nil
+    }
 }
 
 extension DaroAdInfo {
-  var toBody: [String: Any] {
-    return [
-      "adUnitId": self.adUnitId,
-      "latencyMillis": self.latency as Any,
-    ]
-  }
+    var toBody: [String: Any] {
+        return [
+            "adUnitId": adUnitId,
+            "latencyMillis": latency as Any,
+        ]
+    }
 }
 
 extension DaroError {
-  var toBody: [String: Any] {
-    return [
-      "code": self.code,
-      "message": self.message,
-    ]
-  }
+    var toBody: [String: Any] {
+        return [
+            "code": code,
+            "message": message,
+        ]
+    }
 }
