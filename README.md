@@ -10,13 +10,12 @@ yarn install
 
 ## Usage
 
-
 ```js
-import { DaroMView } from "react-native-daro-m";
+import { DaroMView } from 'react-native-daro-m';
 
 // ...
 
-<DaroMView color="tomato" />
+<DaroMView color="tomato" />;
 ```
 
 ## Example
@@ -36,7 +35,6 @@ yarn run android
 ```sh
 yarn run ios --simulator "iPhone 16"
 ```
-
 
 ## License
 
