@@ -88,6 +88,7 @@ class DaroMModule: RCTEventEmitter {
   internal var appOpenAds: [String: AppOpenAd] = [:]
   internal var lightPopups: [String: LightPopupAd] = [:]
   internal var lightPopupConfigurations: [String: [String: Any]] = [:]
+  internal var savedAdditionalSafeAreaInsets: UIEdgeInsets?
 
     // MARK: - SDK 초기화 및 설정
 
@@ -107,7 +108,7 @@ class DaroMModule: RCTEventEmitter {
       resolve(Void())
       return
     }
-    
+
     // 초기화 진행
     DaroAds.shared.logLevel = .debug
     DaroAds.shared.initialized { error in
@@ -191,6 +192,14 @@ extension DaroMModule {
 extension DaroMModule {
   func sendEvent(with event: Event, body: Any?) {
     sendEvent(withName: event.rawValue, body: body)
+  }
+
+  func restoreAdditionalSafeAreaInsets() {
+    guard let savedInsets = savedAdditionalSafeAreaInsets else { return }
+    DispatchQueue.main.async {
+      UIApplication.shared.windows.first?.rootViewController?.additionalSafeAreaInsets = savedInsets
+    }
+    savedAdditionalSafeAreaInsets = nil
   }
 }
 

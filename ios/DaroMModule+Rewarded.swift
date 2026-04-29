@@ -49,6 +49,7 @@ extension DaroMModule {
         // DARO SDK positions the close [X] button below the status bar on notched devices.
         let topInset = window.safeAreaInsets.top
         if topInset > 0 {
+          self.savedAdditionalSafeAreaInsets = viewController.additionalSafeAreaInsets
           viewController.additionalSafeAreaInsets.top = topInset
         }
         if let customData {
@@ -99,15 +100,13 @@ extension DaroMModule {
 
       ad.rewardedAdListener.onDismiss = { [weak self] adInfo in
         DaroMModule.logger.debug("[DARO] Sample Rewarded Ad hidden")
-        // Reset additionalSafeAreaInsets after ad dismissal to avoid side effects on app UI.
-        DispatchQueue.main.async {
-          UIApplication.shared.windows.first?.rootViewController?.additionalSafeAreaInsets = .zero
-        }
+        self?.restoreAdditionalSafeAreaInsets()
         self?.sendEvent(with: .onRewardedAdHiddenEvent, body: adInfo?.toBody)
       }
 
       ad.rewardedAdListener.onFailedToShow = { [weak self] adInfo, error in
         DaroMModule.logger.debug("[DARO] Sample Rewarded Ad failed to display: \(error)")
+        self?.restoreAdditionalSafeAreaInsets()
         self?.sendEvent(with: .onRewardedAdFailedToDisplayEvent, body: adInfo?.toBody)
       }
 

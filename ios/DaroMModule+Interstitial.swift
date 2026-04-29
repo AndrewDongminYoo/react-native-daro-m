@@ -3,7 +3,6 @@ import DaroM
 // MARK: - Interstitial Ad Methods
 
 extension DaroMModule {
-    
   @objc(isInterstitialReady:::)
     func isInterstitialReady(
       _ adUnitId: String,
@@ -50,6 +49,7 @@ extension DaroMModule {
         // so DARO SDK (AppLovin-based) positions the close [X] button below the status bar.
         let topInset = window.safeAreaInsets.top
         if topInset > 0 {
+          self.savedAdditionalSafeAreaInsets = viewController.additionalSafeAreaInsets
           viewController.additionalSafeAreaInsets.top = topInset
         }
         loadedAd.show(viewController: viewController)
@@ -97,15 +97,13 @@ extension DaroMModule {
 
       ad.interstitialListener.onDismiss = { [weak self] adInfo in
         DaroMModule.logger.debug("[DARO] Sample Interstitial Ad hidden")
-        // Reset additionalSafeAreaInsets after ad dismissal to avoid side effects on app UI.
-        DispatchQueue.main.async {
-          UIApplication.shared.windows.first?.rootViewController?.additionalSafeAreaInsets = .zero
-        }
+        self?.restoreAdditionalSafeAreaInsets()
         self?.sendEvent(with: .onInterstitialHiddenEvent, body: adInfo?.toBody)
       }
 
       ad.interstitialListener.onFailedToShow = { [weak self] adInfo, error in
         DaroMModule.logger.debug("[DARO] Sample Interstitial Ad failed to display")
+        self?.restoreAdditionalSafeAreaInsets()
         self?.sendEvent(with: .onInterstitialAdFailedToDisplayEvent, body: adInfo?.toBody)
       }
     }
