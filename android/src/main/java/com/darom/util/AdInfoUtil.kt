@@ -8,44 +8,57 @@ import droom.daro.core.model.DaroAdLoadError
 import droom.daro.core.model.DaroRewardedAd
 
 internal object AdInfoUtil {
-  fun getAdInfo(adUnitId: String, ad: DaroAdInfo): WritableMap {
-    val adInfo = Arguments.createMap()
-    adInfo.putString("adUnitId", adUnitId)
-    adInfo.putInt("latencyMillis", ad.latency)
+    fun getAdInfo(
+        adUnitId: String,
+        ad: DaroAdInfo,
+    ): WritableMap {
+        val adInfo = Arguments.createMap()
+        adInfo.putString("adUnitId", adUnitId)
+        adInfo.putInt("latencyMillis", ad.latency)
 
-    return adInfo
-  }
-
-  fun getAdLoadFailedInfo(adUnitId: String?, error: DaroAdLoadError?): WritableMap {
-    val errInfo = Arguments.createMap()
-    errInfo.putString("adUnitId", adUnitId)
-
-    if (error != null) {
-      errInfo.putInt("code", error.code)
-      errInfo.putString("message", error.message)
-      errInfo.putInt("latencyMillis", error.latency)
-    } else {
-      errInfo.putInt("code", -1)
+        return adInfo
     }
 
-    return errInfo
-  }
+    fun getAdLoadFailedInfo(
+        adUnitId: String?,
+        error: DaroAdLoadError?,
+    ): WritableMap {
+        val errInfo = Arguments.createMap()
+        errInfo.putString("adUnitId", adUnitId)
 
-  fun getAdDisplayFailedInfo(adUnitId: String, ad: DaroAdInfo, error: DaroAdDisplayFailError): WritableMap {
-    val info = getAdInfo(adUnitId, ad)
+        if (error != null) {
+            errInfo.putInt("code", error.code)
+            errInfo.putString("message", error.message)
+            errInfo.putInt("latencyMillis", error.latency)
+        } else {
+            errInfo.putInt("code", -1)
+        }
 
-    info.putString("message", error.message)
+        return errInfo
+    }
 
-    return info
-  }
+    fun getAdDisplayFailedInfo(
+        adUnitId: String,
+        ad: DaroAdInfo,
+        error: DaroAdDisplayFailError,
+    ): WritableMap {
+        val info = getAdInfo(adUnitId, ad)
 
-  fun getRewardInfo(adUnitId: String, reward: DaroRewardedAd.DaroRewardedItem): WritableMap {
-    val adInfo = Arguments.createMap()
+        info.putString("message", error.message)
 
-    adInfo.putString("adUnitId", adUnitId)
-    adInfo.putString("rewardLabel", reward.type)
-    adInfo.putInt("rewardAmount", reward.amount)
+        return info
+    }
 
-    return adInfo
-  }
+    fun getRewardInfo(
+        adUnitId: String,
+        reward: DaroRewardedAd.DaroRewardedItem,
+    ): WritableMap {
+        val adInfo = Arguments.createMap()
+
+        adInfo.putString("adUnitId", adUnitId)
+        adInfo.putString("rewardLabel", reward.type)
+        adInfo.putInt("rewardAmount", reward.amount)
+
+        return adInfo
+    }
 }

@@ -18,146 +18,147 @@ import droom.daro.view.DaroAdViewListener
 import droom.daro.view.DaroBannerAdView
 
 @SuppressLint("ViewConstructor")
-class DaroMAdBannerViewContainer(val context: ReactContext) : ReactViewGroup(context),
-  DaroAdViewListener {
+class DaroMAdBannerViewContainer(
+    val context: ReactContext,
+) : ReactViewGroup(context),
+    DaroAdViewListener {
+    private var adView: DaroBannerAdView? = null
 
-  private var adView: DaroBannerAdView? = null
+    internal var adUnitId: String = ""
 
-  internal var adUnitId: String = ""
+    internal var adSize: DaroBannerSize? = null
 
-  internal var adSize: DaroBannerSize? = null
+    internal var loadOnMount: Boolean = true
 
-  internal var loadOnMount: Boolean = true
+    private var isVisible: Boolean = true
+    private var isAdPaused: Boolean = false
 
-  private var isVisible: Boolean = true
-  private var isAdPaused: Boolean = false
+    fun loadAd() {
+        (adView ?: buildAdView())?.apply {
+            adView = this
 
-  fun loadAd() {
-    (adView ?: buildAdView())?.apply {
-      adView = this
+            if (this.parent == null) {
+                this@DaroMAdBannerViewContainer.addView(this)
+            }
 
-      if (this.parent == null) {
-        this@DaroMAdBannerViewContainer.addView(this)
-      }
-
-      loadAd()
-    }
-  }
-
-  private fun buildAdView(): DaroBannerAdView? {
-    if (adUnitId.isEmpty() || adSize == null) {
-      return null
+            loadAd()
+        }
     }
 
-    return DaroBannerAdView(
-      context,
-      DaroBannerAdUnit(
-        key = adUnitId,
-        placement = adUnitId,
-        bannerSize = adSize!!,
-      )
-    ).also { view ->
-      view.setListener(this)
+    private fun buildAdView(): DaroBannerAdView? {
+        if (adUnitId.isEmpty() || adSize == null) {
+            return null
+        }
+
+        return DaroBannerAdView(
+            context,
+            DaroBannerAdUnit(
+                key = adUnitId,
+                placement = adUnitId,
+                bannerSize = adSize!!,
+            ),
+        ).also { view ->
+            view.setListener(this)
+        }
     }
-  }
 
-  fun destroy() {
-    adView?.destroy()
-  }
-
-  fun setAdVisibility(visible: Boolean) {
-    isVisible = visible
-    this.isVisible = visible
-    adView?.isVisible = visible
-
-    if (visible) {
-      resumeAd()
-    } else {
-      pauseAd()
+    fun destroy() {
+        adView?.destroy()
     }
-  }
 
-  fun pauseAd() {
-    if (!isAdPaused) {
-      isAdPaused = true
-      adView?.pause()
+    fun setAdVisibility(visible: Boolean) {
+        isVisible = visible
+        this.isVisible = visible
+        adView?.isVisible = visible
+
+        if (visible) {
+            resumeAd()
+        } else {
+            pauseAd()
+        }
     }
-  }
 
-  fun resumeAd() {
-    if (isAdPaused) {
-      isAdPaused = false
-      adView?.resume()
+    fun pauseAd() {
+        if (!isAdPaused) {
+            isAdPaused = true
+            adView?.pause()
+        }
     }
-  }
 
-  override fun onAdClicked(adInfo: DaroAdInfo) {
-    sendNativeViewEvent(
-      reactContext = context,
-      event = AdViewEvent.ON_AD_CLICKED,
-      params = AdInfoUtil.getAdInfo(adUnitId, adInfo)
-    )
-  }
-
-  override fun onAdImpression(adInfo: DaroAdInfo) {
-    sendNativeViewEvent(
-      reactContext = context,
-      event = AdViewEvent.ON_AD_IMPRESSION,
-      params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
-    )
-  }
-
-  override fun onAdLoadFail(err: DaroAdLoadError) {
-    sendNativeViewEvent(
-      reactContext = context,
-      event = AdViewEvent.ON_AD_FAILED_TO_LOAD,
-      params = AdInfoUtil.getAdLoadFailedInfo(adUnitId, err),
-    )
-  }
-
-  override fun onAdLoadSuccess(
-    ad: DaroViewAd,
-    adInfo: DaroAdInfo,
-  ) {
-    sendNativeViewEvent(
-      reactContext = context,
-      event = AdViewEvent.ON_AD_LOADED,
-      params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
-    )
-
-    adView?.children?.first()?.let {
-      it.measure(
-        MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
-        MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
-      )
-
-      it.layout(0, 0, width, height)
-      it.requestLayout()
-      adView!!.requestLayout()
+    fun resumeAd() {
+        if (isAdPaused) {
+            isAdPaused = false
+            adView?.resume()
+        }
     }
-  }
 
-  override fun requestLayout() {
-    super.requestLayout()
-
-    // https://stackoverflow.com/a/39838774/5477988
-    // This is required to ensure ad refreshes render correctly in RN Android due to known issue
-    // where `getWidth()` and `getHeight()` return 0 on attach
-    try {
-      adView?.measure(
-        MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
-        MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
-      )
-
-      adView?.layout(0, 0, width, height)
-    } catch (_: Exception) {
-      // Ignore
+    override fun onAdClicked(adInfo: DaroAdInfo) {
+        sendNativeViewEvent(
+            reactContext = context,
+            event = AdViewEvent.ON_AD_CLICKED,
+            params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
+        )
     }
-  }
 
-  fun onSetProps() {
-    if (loadOnMount) {
-      loadAd()
+    override fun onAdImpression(adInfo: DaroAdInfo) {
+        sendNativeViewEvent(
+            reactContext = context,
+            event = AdViewEvent.ON_AD_IMPRESSION,
+            params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
+        )
     }
-  }
+
+    override fun onAdLoadFail(err: DaroAdLoadError) {
+        sendNativeViewEvent(
+            reactContext = context,
+            event = AdViewEvent.ON_AD_FAILED_TO_LOAD,
+            params = AdInfoUtil.getAdLoadFailedInfo(adUnitId, err),
+        )
+    }
+
+    override fun onAdLoadSuccess(
+        ad: DaroViewAd,
+        adInfo: DaroAdInfo,
+    ) {
+        sendNativeViewEvent(
+            reactContext = context,
+            event = AdViewEvent.ON_AD_LOADED,
+            params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
+        )
+
+        adView?.children?.first()?.let {
+            it.measure(
+                MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY),
+            )
+
+            it.layout(0, 0, width, height)
+            it.requestLayout()
+            adView!!.requestLayout()
+        }
+    }
+
+    override fun requestLayout() {
+        super.requestLayout()
+
+        // https://stackoverflow.com/a/39838774/5477988
+        // This is required to ensure ad refreshes render correctly in RN Android due to known issue
+        // where `getWidth()` and `getHeight()` return 0 on attach
+        try {
+            adView?.measure(
+                MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY),
+            )
+
+            adView?.layout(0, 0, width, height)
+        } catch (_: Exception) {
+            // Ignore
+        }
+    }
+
+    fun onSetProps() {
+        if (loadOnMount) {
+            loadAd()
+        }
+    }
 }
