@@ -8,7 +8,14 @@ import type {
   ImageStyle,
   ViewProps,
 } from 'react-native';
-import { findNodeHandle, Image, Platform, Text, View } from 'react-native';
+import {
+  findNodeHandle,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { NativeAdViewContext } from './NativeAdViewProvider';
 
 // 스타일 속성 추출을 위한 타입 정의
@@ -62,7 +69,7 @@ type StyleProps = {
 // 스타일 속성 추출 커스텀 훅
 const useStyleProps = (style: StyleProp<TextStyle>): StyleProps => {
   return useMemo(() => {
-    const styleObj = style as TextStyle;
+    const styleObj: TextStyle = StyleSheet.flatten(style) ?? {};
     return {
       // 1. 폰트 관련
       fontSize: styleObj.fontSize as number,
@@ -150,7 +157,7 @@ type ImageStyleProps = StyleProps & {
 // Image 스타일 속성 추출 커스텀 훅
 const useImageStyleProps = (style: StyleProp<ImageStyle>): ImageStyleProps => {
   return useMemo(() => {
-    const styleObj = style as ImageStyle;
+    const styleObj: ImageStyle = StyleSheet.flatten(style) ?? {};
     return {
       // 기본 스타일 속성
       backgroundColor: styleObj.backgroundColor as string,
