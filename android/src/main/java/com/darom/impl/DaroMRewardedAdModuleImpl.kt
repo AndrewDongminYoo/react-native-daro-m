@@ -39,68 +39,74 @@ internal class DaroMRewardedAdModuleImpl(
   override fun showRewardedAd(
     adUnitId: String,
     customData: String?,
+    promise: Promise,
   ) {
-    currentActivity?.let { activity ->
-      retrieveAd(adUnitId)?.apply {
-        setListener(
-          object : DaroRewardedAdListener {
-            override fun onAdImpression(adInfo: DaroAdInfo) {
-              sendNativeEvent(
-                event = RewardedEvent.ON_REWARDED_AD_IMPRESSION_RECORDED,
-                params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
-              )
-            }
-
-            override fun onAdClicked(adInfo: DaroAdInfo) {
-              sendNativeEvent(
-                event = RewardedEvent.ON_REWARDED_AD_CLICKED_EVENT,
-                params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
-              )
-            }
-
-            override fun onDismiss(adInfo: DaroAdInfo) {
-              sendNativeEvent(
-                event = RewardedEvent.ON_REWARDED_AD_HIDDEN_EVENT,
-                params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
-              )
-            }
-
-            override fun onEarnedReward(
-              adInfo: DaroAdInfo,
-              rewardItem: DaroRewardedAd.DaroRewardedItem,
-            ) {
-              sendNativeEvent(
-                event = RewardedEvent.ON_REWARDED_AD_RECEIVED_REWARD_EVENT,
-                params = AdInfoUtil.getRewardInfo(adUnitId, rewardItem),
-              )
-            }
-
-            override fun onFailedToShow(
-              adInfo: DaroAdInfo,
-              error: DaroAdDisplayFailError,
-            ) {
-              sendNativeEvent(
-                event = RewardedEvent.ON_REWARDED_AD_FAILED_TO_DISPLAY_EVENT,
-                params = AdInfoUtil.getAdDisplayFailedInfo(adUnitId, adInfo, error),
-              )
-            }
-
-            override fun onShown(adInfo: DaroAdInfo) {
-              sendNativeEvent(
-                event = RewardedEvent.ON_REWARDED_AD_DISPLAYED_EVENT,
-                params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
-              )
-
-              rewardedAdMap.remove(adUnitId)
-            }
-          },
-        )
-
-        customData?.let { it -> setCustomData(it) }
-        activity.runOnUiThread {
-          show(activity)
-        }
+    val activity =
+      currentActivity ?: run {
+        promise.reject("ACTIVITY_NOT_FOUND", "Current activity is null")
+        return
       }
+    val ad =
+      retrieveAd(adUnitId) ?: run {
+        promise.reject("REWARDED_AD_NOT_LOADED", "Rewarded ad not loaded for unit: $adUnitId")
+        return
+      }
+    ad.setListener(
+      object : DaroRewardedAdListener {
+        override fun onAdImpression(adInfo: DaroAdInfo) {
+          sendNativeEvent(
+            event = RewardedEvent.ON_REWARDED_AD_IMPRESSION_RECORDED,
+            params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
+          )
+        }
+
+        override fun onAdClicked(adInfo: DaroAdInfo) {
+          sendNativeEvent(
+            event = RewardedEvent.ON_REWARDED_AD_CLICKED_EVENT,
+            params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
+          )
+        }
+
+        override fun onDismiss(adInfo: DaroAdInfo) {
+          sendNativeEvent(
+            event = RewardedEvent.ON_REWARDED_AD_HIDDEN_EVENT,
+            params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
+          )
+        }
+
+        override fun onEarnedReward(
+          adInfo: DaroAdInfo,
+          rewardItem: DaroRewardedAd.DaroRewardedItem,
+        ) {
+          sendNativeEvent(
+            event = RewardedEvent.ON_REWARDED_AD_RECEIVED_REWARD_EVENT,
+            params = AdInfoUtil.getRewardInfo(adUnitId, rewardItem),
+          )
+        }
+
+        override fun onFailedToShow(
+          adInfo: DaroAdInfo,
+          error: DaroAdDisplayFailError,
+        ) {
+          sendNativeEvent(
+            event = RewardedEvent.ON_REWARDED_AD_FAILED_TO_DISPLAY_EVENT,
+            params = AdInfoUtil.getAdDisplayFailedInfo(adUnitId, adInfo, error),
+          )
+        }
+
+        override fun onShown(adInfo: DaroAdInfo) {
+          sendNativeEvent(
+            event = RewardedEvent.ON_REWARDED_AD_DISPLAYED_EVENT,
+            params = AdInfoUtil.getAdInfo(adUnitId, adInfo),
+          )
+          rewardedAdMap.remove(adUnitId)
+        }
+      },
+    )
+    customData?.let { ad.setCustomData(it) }
+    activity.runOnUiThread {
+      ad.show(activity)
+      promise.resolve(null)
     }
   }
 

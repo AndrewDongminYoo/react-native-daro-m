@@ -2,6 +2,7 @@ package com.darom
 
 import android.app.Application
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import com.darom.constants.InternalDaroMBannerSize
 import com.darom.event.DaroMEvent
 import com.darom.event.InterstitialEvent
@@ -43,12 +44,13 @@ class DaroMModule(
       return
     }
     try {
+      val isDebuggable = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
       Daro.init(
         application = context.applicationContext as Application,
         sdkConfig =
           SDKConfig
             .Builder()
-            .setDebugMode(false)
+            .setDebugMode(isDebuggable)
             .build(),
       )
       isInitialized = true
@@ -111,7 +113,10 @@ class DaroMModule(
 
     abstract fun loadInterstitial(adUnitId: String)
 
-    abstract fun showInterstitial(adUnitId: String)
+    abstract fun showInterstitial(
+      adUnitId: String,
+      promise: Promise,
+    )
 
     override fun getComponents(): MutableMap<String, Any> = InterstitialEvent.entries.associate { it.value to it.value }.toMutableMap()
   }
@@ -136,8 +141,11 @@ class DaroMModule(
   }
 
   @ReactMethod
-  fun showInterstitial(adUnitId: String) {
-    daroMInterstitialModule.showInterstitial(adUnitId)
+  fun showInterstitial(
+    adUnitId: String,
+    promise: Promise,
+  ) {
+    daroMInterstitialModule.showInterstitial(adUnitId, promise)
   }
 
   @OptIn(ExperimentalStdlibApi::class)
@@ -154,6 +162,7 @@ class DaroMModule(
     abstract fun showRewardedAd(
       adUnitId: String,
       customData: String?,
+      promise: Promise,
     )
 
     override fun getComponents(): MutableMap<String, Any> = RewardedEvent.entries.associate { it.value to it.value }.toMutableMap()
@@ -182,8 +191,9 @@ class DaroMModule(
   fun showRewardedAd(
     adUnitId: String,
     customData: String?,
+    promise: Promise,
   ) {
-    daroMRewardedModule.showRewardedAd(adUnitId, customData)
+    daroMRewardedModule.showRewardedAd(adUnitId, customData, promise)
   }
 
   @OptIn(ExperimentalStdlibApi::class)
@@ -197,7 +207,10 @@ class DaroMModule(
 
     abstract fun loadLightPopup(adUnitId: String)
 
-    abstract fun showLightPopup(adUnitId: String)
+    abstract fun showLightPopup(
+      adUnitId: String,
+      promise: Promise,
+    )
 
     abstract fun setLightPopupAdConfiguration(
       adUnitId: String,
@@ -227,8 +240,11 @@ class DaroMModule(
   }
 
   @ReactMethod
-  fun showLightPopup(adUnitId: String) {
-    daroMLightPopupModule.showLightPopup(adUnitId)
+  fun showLightPopup(
+    adUnitId: String,
+    promise: Promise,
+  ) {
+    daroMLightPopupModule.showLightPopup(adUnitId, promise)
   }
 
   @ReactMethod

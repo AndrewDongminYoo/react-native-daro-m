@@ -82,57 +82,65 @@ internal class DaroMLightPopupModuleImpl(
     optionMap[adUnitId] = newOption
   }
 
-  override fun showLightPopup(adUnitId: String) {
-    currentActivity?.let {
-      it.runOnUiThread {
-        retrieveAd(adUnitId)?.apply {
-          setListener(
-            object : DaroLightPopupAdListener {
-              override fun onDismiss(ad: DaroAdInfo) {
-                sendNativeEvent(
-                  event = LightPopupEvent.ON_LIGHTPOPUP_HIDDEN_EVENT,
-                  params = AdInfoUtil.getAdInfo(adUnitId, ad),
-                )
-              }
-
-              override fun onFailedToShow(
-                ad: DaroAdInfo,
-                error: DaroAdDisplayFailError,
-              ) {
-                sendNativeEvent(
-                  event = LightPopupEvent.ON_LIGHTPOPUP_AD_FAILED_TO_DISPLAY_EVENT,
-                  params = AdInfoUtil.getAdDisplayFailedInfo(adUnitId, ad, error),
-                )
-              }
-
-              override fun onShown(ad: DaroAdInfo) {
-                sendNativeEvent(
-                  event = LightPopupEvent.ON_LIGHTPOPUP_DISPLAYED_EVENT,
-                  params = AdInfoUtil.getAdInfo(adUnitId, ad),
-                )
-
-                lightpopupAdMap.remove(adUnitId)
-              }
-
-              override fun onAdClicked(responseInfo: DaroAdInfo) {
-                sendNativeEvent(
-                  event = LightPopupEvent.ON_LIGHTPOPUP_CLICKED_EVENT,
-                  params = AdInfoUtil.getAdInfo(adUnitId, responseInfo),
-                )
-              }
-
-              override fun onAdImpression(responseInfo: DaroAdInfo) {
-                sendNativeEvent(
-                  event = LightPopupEvent.ON_LIGHTPOPUP_AD_IMPRESSION_RECORDED,
-                  params = AdInfoUtil.getAdInfo(adUnitId, responseInfo),
-                )
-              }
-            },
-          )
-
-          show(it)
-        }
+  override fun showLightPopup(
+    adUnitId: String,
+    promise: Promise,
+  ) {
+    val activity =
+      currentActivity ?: run {
+        promise.reject("ACTIVITY_NOT_FOUND", "Current activity is null")
+        return
       }
+    val ad =
+      retrieveAd(adUnitId) ?: run {
+        promise.reject("LIGHTPOPUP_NOT_LOADED", "LightPopup ad not loaded for unit: $adUnitId")
+        return
+      }
+    activity.runOnUiThread {
+      ad.setListener(
+        object : DaroLightPopupAdListener {
+          override fun onDismiss(ad: DaroAdInfo) {
+            sendNativeEvent(
+              event = LightPopupEvent.ON_LIGHTPOPUP_HIDDEN_EVENT,
+              params = AdInfoUtil.getAdInfo(adUnitId, ad),
+            )
+          }
+
+          override fun onFailedToShow(
+            ad: DaroAdInfo,
+            error: DaroAdDisplayFailError,
+          ) {
+            sendNativeEvent(
+              event = LightPopupEvent.ON_LIGHTPOPUP_AD_FAILED_TO_DISPLAY_EVENT,
+              params = AdInfoUtil.getAdDisplayFailedInfo(adUnitId, ad, error),
+            )
+          }
+
+          override fun onShown(ad: DaroAdInfo) {
+            sendNativeEvent(
+              event = LightPopupEvent.ON_LIGHTPOPUP_DISPLAYED_EVENT,
+              params = AdInfoUtil.getAdInfo(adUnitId, ad),
+            )
+            lightpopupAdMap.remove(adUnitId)
+          }
+
+          override fun onAdClicked(responseInfo: DaroAdInfo) {
+            sendNativeEvent(
+              event = LightPopupEvent.ON_LIGHTPOPUP_CLICKED_EVENT,
+              params = AdInfoUtil.getAdInfo(adUnitId, responseInfo),
+            )
+          }
+
+          override fun onAdImpression(responseInfo: DaroAdInfo) {
+            sendNativeEvent(
+              event = LightPopupEvent.ON_LIGHTPOPUP_AD_IMPRESSION_RECORDED,
+              params = AdInfoUtil.getAdInfo(adUnitId, responseInfo),
+            )
+          }
+        },
+      )
+      ad.show(activity)
+      promise.resolve(null)
     }
   }
 
