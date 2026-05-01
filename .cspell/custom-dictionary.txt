@@ -9,12 +9,14 @@ armeabi
 Autoresizing
 buildscript
 Buildscript
+daro
 darom
 droom
 interstitials
 LIGHTPOPUP
 Lovin
 Millis
+MREC
 ndkversion
 nonnull
 QWER
