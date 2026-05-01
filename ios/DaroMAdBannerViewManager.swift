@@ -81,6 +81,10 @@ final class DaroMAdBannerView: UIView {
             self?.onAdLoadFailedEvent?(error.toBody)
         }
 
+        bannerView.listener.onAdClicked = { [weak self] adInfo in
+            self?.onAdClickedEvent?(adInfo?.toBody)
+        }
+
         bannerView.listener.onAdImpression = { [weak self] adInfo in
             self?.onAdImpressionRecordedEvent?(adInfo?.toBody)
         }

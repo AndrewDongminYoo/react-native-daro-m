@@ -165,19 +165,15 @@ final class RNDaroMNativeAdView: UIView, RenderDelegate {
         native.pinToEdges(to: self)
 
         internalAdView?.listener.onAdLoadSuccess = { [weak self] _, adInfo in
-//      print("[QWER] onSuccess \(ad) \(adInfo)")
             self?.onAdLoadedEvent?(adInfo?.toBody)
         }
         internalAdView?.listener.onAdLoadFail = { [weak self] error in
-//      print("[QWER] onFailure \(error)")
             self?.onAdLoadFailedEvent?(error.toBody)
         }
         internalAdView?.listener.onAdImpression = { [weak self] adInfo in
-//      print("[QWER] adImpression\(adInfo)")
             self?.onAdImpressionRecordedEvent?(adInfo?.toBody)
         }
         internalAdView?.listener.onAdClicked = { [weak self] adInfo in
-//      print("[QWER] adClicked \(adInfo)")
             self?.onAdClickedEvent?(adInfo?.toBody)
         }
     }

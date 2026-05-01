@@ -121,6 +121,9 @@ extension UIImageView {
         }
         if let aspectRatio = style["aspectRatio"] as? CGFloat {
             contentMode = .scaleAspectFit
+            removeConstraints(constraints.filter {
+                $0.firstAttribute == .width && $0.secondAttribute == .height
+            })
             let constraint = NSLayoutConstraint(
                 item: self,
                 attribute: .width,
