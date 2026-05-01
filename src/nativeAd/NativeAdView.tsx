@@ -46,24 +46,25 @@ export const NativeAdView = forwardRef<
   NativeAdViewHandler,
   NativeAdViewProps & ViewProps
 >(function NativeAdView(props, ref) {
-  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkInitialization = async () => {
-      const result = await DaroMModule.isInitialized();
-      setIsInitialized(result);
+    let cancelled = false;
+    DaroMModule.isInitialized().then((result: boolean) => {
+      if (cancelled) return;
       if (!result) {
         console.warn(
           'NativeAdView is mounted before the initialization of the DaroM React Native module.'
         );
       }
+      setIsInitialized(result);
+    });
+    return () => {
+      cancelled = true;
     };
-
-    checkInitialization();
   }, []);
 
-  // Avoid rendering the NativeAdView if the SDK is not initialized
-  if (!isInitialized) {
+  if (isInitialized === null || !isInitialized) {
     return <View {...props} />;
   }
 

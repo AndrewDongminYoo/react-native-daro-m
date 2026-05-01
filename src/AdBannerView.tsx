@@ -12,7 +12,6 @@ import {
   requireNativeComponent,
   UIManager,
   View,
-  type DimensionValue,
   type NativeMethods,
   type ViewProps,
 } from 'react-native';
@@ -46,14 +45,6 @@ const AdViewComponent = requireNativeComponent<
 >(ComponentName);
 type AdViewType = React.Component<AdBannerViewProps> & NativeMethods;
 
-type SizeKey = 'width' | 'height';
-type SizeRecord = Partial<Record<SizeKey, DimensionValue>>;
-
-const ADVIEW_SIZE = {
-  banner: { width: 320, height: 50 },
-  mrec: { width: 300, height: 250 },
-};
-
 export const AdBannerView = forwardRef<
   AdBannerViewHandler,
   AdBannerViewProps & ViewProps
@@ -74,9 +65,8 @@ export const AdBannerView = forwardRef<
   },
   ref
 ) {
-  const adFormatSize = useRef<SizeRecord>({});
   const adViewRef = useRef<AdViewType | null>(null);
-  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
 
   const loadAd = useCallback(() => {
     if (adViewRef.current) {
@@ -96,28 +86,20 @@ export const AdBannerView = forwardRef<
   }, []);
 
   useEffect(() => {
-    (async () => {
-      if (adFormat === AdFormat.BANNER) {
-        adFormatSize.current = {
-          width: ADVIEW_SIZE.banner.width,
-          height: ADVIEW_SIZE.banner.height,
-        };
-      } else {
-        adFormatSize.current = {
-          width: ADVIEW_SIZE.mrec.width,
-          height: ADVIEW_SIZE.mrec.height,
-        };
-      }
-      const initialized = await DaroMModule.isInitialized();
-      setIsInitialized(initialized);
-
+    let cancelled = false;
+    DaroMModule.isInitialized().then((initialized: boolean) => {
+      if (cancelled) return;
       if (!initialized) {
         console.warn(
           'AdBannerView is mounted before the initialization of the DaroM React Native module'
         );
       }
-    })();
-  }, [adFormat]);
+      setIsInitialized(initialized);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const onAdLoadedEvent = useCallback(
     (event: AdNativeEvent<AdInfo>) => {
@@ -147,9 +129,7 @@ export const AdBannerView = forwardRef<
     [onAdImpressionRecorded]
   );
 
-  if (!isInitialized) {
-    // Early return if not initialized
-    console.log('AdBannerView is not initialized');
+  if (isInitialized === null || !isInitialized) {
     return <View style={style} {...otherProps} />;
   }
 
