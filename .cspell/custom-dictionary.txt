@@ -1,0 +1,26 @@
+# Custom Dictionary Words
+AARRGGBB
+adunit
+ADVIEW
+androidx
+APPOPEN
+ARGB
+armeabi
+Autoresizing
+buildscript
+Buildscript
+darom
+droom
+interstitials
+LIGHTPOPUP
+Lovin
+Millis
+ndkversion
+nonnull
+QWER
+RRGGBB
+Spannable
+stdlib
+Subview
+Superview
+uimanager
