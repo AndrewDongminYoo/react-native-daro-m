@@ -40,6 +40,6 @@ export async function showMediationDebugger() {
   await DaroMModule.showMediationDebugger();
 }
 
-export async function setUserId(userId: String) {
+export async function setUserId(userId: string) {
   await DaroMModule.setUserId(userId);
 }
