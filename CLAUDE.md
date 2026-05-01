@@ -59,26 +59,28 @@ App → NativeModules.DaroMModule.loadInterstitial(unitId)
 
 ### Source Layout (`src/`)
 
-| File/Dir | Purpose |
-|---|---|
-| `index.tsx` | Public API entry point |
-| `EventEmitter.ts` | Central NativeEventEmitter wrapper |
-| `AdBannerView.tsx` | Banner/MREC component (`forwardRef` + `useImperativeHandle`) |
-| `InterstitialAd.ts` | Programmatic interstitial API |
-| `RewardedAd.ts` | Programmatic rewarded API |
-| `AppOpenAd.ts` | Programmatic app-open API |
-| `LightPopupAd.ts` | Programmatic light-popup API (uses `tinycolor2`) |
-| `nativeAd/` | NativeAdView component + Context provider |
-| `types/` | All TypeScript interfaces and event types |
+| File/Dir            | Purpose                                                      |
+| ------------------- | ------------------------------------------------------------ |
+| `index.tsx`         | Public API entry point                                       |
+| `EventEmitter.ts`   | Central NativeEventEmitter wrapper                           |
+| `AdBannerView.tsx`  | Banner/MREC component (`forwardRef` + `useImperativeHandle`) |
+| `InterstitialAd.ts` | Programmatic interstitial API                                |
+| `RewardedAd.ts`     | Programmatic rewarded API                                    |
+| `AppOpenAd.ts`      | Programmatic app-open API                                    |
+| `LightPopupAd.ts`   | Programmatic light-popup API (uses `tinycolor2`)             |
+| `nativeAd/`         | NativeAdView component + Context provider                    |
+| `types/`            | All TypeScript interfaces and event types                    |
 
 ### Component Patterns
 
 **UI Components** (`AdBannerView`, `NativeAdView`):
+
 - Use `forwardRef` + `useImperativeHandle` to expose `loadAd()` imperatively to parent components
 - Check `DaroMModule.isInitialized()` before rendering; fall back to empty `<View>` if not ready
 - Native event prop naming convention: `onAdLoadedEvent` (native side) → `onAdLoaded` (JS-facing prop)
 
 **Programmatic APIs** (Interstitial, Rewarded, AppOpen, LightPopup):
+
 - Named object exports (not classes)
 - Call `NativeModules.DaroMModule.*` directly and subscribe to responses via `EventEmitter`
 
