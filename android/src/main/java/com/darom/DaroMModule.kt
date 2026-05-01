@@ -23,221 +23,229 @@ import droom.daro.SDKConfig
 import droom.daro.m.Daro
 
 class DaroMModule(
-    reactContext: ReactApplicationContext,
+  reactContext: ReactApplicationContext,
 ) : ReactContextBaseJavaModule(reactContext) {
-    companion object {
-        const val NAME = "DaroMModule"
+  companion object {
+    const val NAME = "DaroMModule"
+  }
+
+  override fun getName(): String = NAME
+
+  private val context: Context = reactApplicationContext
+
+  @Volatile
+  private var isInitialized: Boolean = false
+
+  @ReactMethod
+  fun initializeSdk(promise: Promise) {
+    if (isInitialized) {
+      promise.resolve(null)
+      return
     }
-
-    override fun getName(): String = NAME
-
-    private val context: Context = reactApplicationContext
-
-    private var isInitialized: Boolean = false
-
-    @ReactMethod
-    fun initializeSdk() {
-        Daro.init(
-            application = context.applicationContext as Application,
-            sdkConfig =
-                SDKConfig
-                    .Builder()
-                    .setDebugMode(false)
-                    .build(),
-        )
-
-        isInitialized = true
+    try {
+      Daro.init(
+        application = context.applicationContext as Application,
+        sdkConfig =
+          SDKConfig
+            .Builder()
+            .setDebugMode(false)
+            .build(),
+      )
+      isInitialized = true
+      promise.resolve(null)
+    } catch (e: Exception) {
+      promise.reject("INIT_ERROR", e.message, e)
     }
+  }
 
-    @ReactMethod
-    fun isInitialized(promise: Promise) {
-        promise.resolve(isInitialized)
-    }
+  @ReactMethod
+  fun isInitialized(promise: Promise) {
+    promise.resolve(isInitialized)
+  }
 
-    @ReactMethod
-    fun showMediationDebugger() {
-        Daro.openDebugger(context)
-    }
+  @ReactMethod
+  fun showMediationDebugger() {
+    Daro.openDebugger(context)
+  }
 
-    @ReactMethod
-    fun setUserId(userId: String) {
-        Daro.setUserId(context, userId)
-    }
+  @ReactMethod
+  fun setUserId(userId: String) {
+    Daro.setUserId(context, userId)
+  }
 
-    override fun getConstants(): MutableMap<String, Any>? {
-        val constants = mutableMapOf<String, Any>()
-        constants.putAll(daroMInterstitialModule.getComponents())
-        constants.putAll(daroMRewardedModule.getComponents())
-        constants.putAll(daroMLightPopupModule.getComponents())
-        constants.putAll(daroMBannerModule.getComponents())
+  override fun getConstants(): MutableMap<String, Any>? {
+    val constants = mutableMapOf<String, Any>()
+    constants.putAll(daroMInterstitialModule.getComponents())
+    constants.putAll(daroMRewardedModule.getComponents())
+    constants.putAll(daroMLightPopupModule.getComponents())
+    constants.putAll(daroMBannerModule.getComponents())
 
-        return constants
-    }
+    return constants
+  }
 
-    internal abstract class DaroMComponentModule(
-        protected val context: ReactContext,
+  internal abstract class DaroMComponentModule(
+    protected val context: ReactContext,
+  ) {
+    abstract fun getComponents(): MutableMap<String, Any>
+
+    fun sendNativeEvent(
+      event: DaroMEvent,
+      params: WritableMap?,
     ) {
-        abstract fun getComponents(): MutableMap<String, Any>
-
-        fun sendNativeEvent(
-            event: DaroMEvent,
-            params: WritableMap?,
-        ) {
-            EventEmitterUtil.sendReactNativeEvent(
-                reactContext = context,
-                event = event,
-                params = params,
-            )
-        }
+      EventEmitterUtil.sendReactNativeEvent(
+        reactContext = context,
+        event = event,
+        params = params,
+      )
     }
+  }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    internal abstract class DaroMInterstitialModule(
-        context: ReactContext,
-    ) : DaroMComponentModule(context) {
-        abstract fun isInterstitialReady(
-            adUnitId: String,
-            promise: Promise,
-        )
+  @OptIn(ExperimentalStdlibApi::class)
+  internal abstract class DaroMInterstitialModule(
+    context: ReactContext,
+  ) : DaroMComponentModule(context) {
+    abstract fun isInterstitialReady(
+      adUnitId: String,
+      promise: Promise,
+    )
 
-        abstract fun loadInterstitial(adUnitId: String)
+    abstract fun loadInterstitial(adUnitId: String)
 
-        abstract fun showInterstitial(adUnitId: String)
+    abstract fun showInterstitial(adUnitId: String)
 
-        override fun getComponents(): MutableMap<String, Any> = InterstitialEvent.entries.associate { it.value to it.value }.toMutableMap()
-    }
+    override fun getComponents(): MutableMap<String, Any> = InterstitialEvent.entries.associate { it.value to it.value }.toMutableMap()
+  }
 
-    private val daroMInterstitialModule: DaroMInterstitialModule =
-        DaroMInterstitialModuleImpl(
-            context = reactContext,
-            getCurrentActivity = { getCurrentActivity() },
-        )
+  private val daroMInterstitialModule: DaroMInterstitialModule =
+    DaroMInterstitialModuleImpl(
+      context = reactContext,
+      getCurrentActivity = { getCurrentActivity() },
+    )
 
-    @ReactMethod
-    fun isInterstitialReady(
-        adUnitId: String,
-        promise: Promise,
-    ) {
-        daroMInterstitialModule.isInterstitialReady(adUnitId, promise)
-    }
+  @ReactMethod
+  fun isInterstitialReady(
+    adUnitId: String,
+    promise: Promise,
+  ) {
+    daroMInterstitialModule.isInterstitialReady(adUnitId, promise)
+  }
 
-    @ReactMethod
-    fun loadInterstitial(adUnitId: String) {
-        daroMInterstitialModule.loadInterstitial(adUnitId)
-    }
+  @ReactMethod
+  fun loadInterstitial(adUnitId: String) {
+    daroMInterstitialModule.loadInterstitial(adUnitId)
+  }
 
-    @ReactMethod
-    fun showInterstitial(adUnitId: String) {
-        daroMInterstitialModule.showInterstitial(adUnitId)
-    }
+  @ReactMethod
+  fun showInterstitial(adUnitId: String) {
+    daroMInterstitialModule.showInterstitial(adUnitId)
+  }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    internal abstract class DaroMRewardedModule(
-        context: ReactContext,
-    ) : DaroMComponentModule(context) {
-        abstract fun isRewardedAdReady(
-            adUnitId: String,
-            promise: Promise,
-        )
+  @OptIn(ExperimentalStdlibApi::class)
+  internal abstract class DaroMRewardedModule(
+    context: ReactContext,
+  ) : DaroMComponentModule(context) {
+    abstract fun isRewardedAdReady(
+      adUnitId: String,
+      promise: Promise,
+    )
 
-        abstract fun loadRewardedAd(adUnitId: String)
+    abstract fun loadRewardedAd(adUnitId: String)
 
-        abstract fun showRewardedAd(
-            adUnitId: String,
-            customData: String?,
-        )
+    abstract fun showRewardedAd(
+      adUnitId: String,
+      customData: String?,
+    )
 
-        override fun getComponents(): MutableMap<String, Any> = RewardedEvent.entries.associate { it.value to it.value }.toMutableMap()
-    }
+    override fun getComponents(): MutableMap<String, Any> = RewardedEvent.entries.associate { it.value to it.value }.toMutableMap()
+  }
 
-    private val daroMRewardedModule: DaroMRewardedModule =
-        DaroMRewardedAdModuleImpl(
-            context = reactContext,
-            getCurrentActivity = { getCurrentActivity() },
-        )
+  private val daroMRewardedModule: DaroMRewardedModule =
+    DaroMRewardedAdModuleImpl(
+      context = reactContext,
+      getCurrentActivity = { getCurrentActivity() },
+    )
 
-    @ReactMethod
-    fun isRewardedAdReady(
-        adUnitId: String,
-        promise: Promise,
-    ) {
-        daroMRewardedModule.isRewardedAdReady(adUnitId, promise)
-    }
+  @ReactMethod
+  fun isRewardedAdReady(
+    adUnitId: String,
+    promise: Promise,
+  ) {
+    daroMRewardedModule.isRewardedAdReady(adUnitId, promise)
+  }
 
-    @ReactMethod
-    fun loadRewardedAd(adUnitId: String) {
-        daroMRewardedModule.loadRewardedAd(adUnitId)
-    }
+  @ReactMethod
+  fun loadRewardedAd(adUnitId: String) {
+    daroMRewardedModule.loadRewardedAd(adUnitId)
+  }
 
-    @ReactMethod
-    fun showRewardedAd(
-        adUnitId: String,
-        customData: String?,
-    ) {
-        daroMRewardedModule.showRewardedAd(adUnitId, customData)
-    }
+  @ReactMethod
+  fun showRewardedAd(
+    adUnitId: String,
+    customData: String?,
+  ) {
+    daroMRewardedModule.showRewardedAd(adUnitId, customData)
+  }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    internal abstract class DaroMLightPopupModule(
-        context: ReactContext,
-    ) : DaroMComponentModule(context) {
-        abstract fun isLightPopupReady(
-            adUnitId: String,
-            promise: Promise,
-        )
+  @OptIn(ExperimentalStdlibApi::class)
+  internal abstract class DaroMLightPopupModule(
+    context: ReactContext,
+  ) : DaroMComponentModule(context) {
+    abstract fun isLightPopupReady(
+      adUnitId: String,
+      promise: Promise,
+    )
 
-        abstract fun loadLightPopup(adUnitId: String)
+    abstract fun loadLightPopup(adUnitId: String)
 
-        abstract fun showLightPopup(adUnitId: String)
+    abstract fun showLightPopup(adUnitId: String)
 
-        abstract fun setLightPopupAdConfiguration(
-            adUnitId: String,
-            parameterMap: ReadableMap,
-        )
+    abstract fun setLightPopupAdConfiguration(
+      adUnitId: String,
+      parameterMap: ReadableMap,
+    )
 
-        override fun getComponents(): MutableMap<String, Any> = LightPopupEvent.entries.associate { it.value to it.value }.toMutableMap()
-    }
+    override fun getComponents(): MutableMap<String, Any> = LightPopupEvent.entries.associate { it.value to it.value }.toMutableMap()
+  }
 
-    private val daroMLightPopupModule: DaroMLightPopupModule =
-        DaroMLightPopupModuleImpl(
-            context = reactContext,
-            getCurrentActivity = { getCurrentActivity() },
-        )
+  private val daroMLightPopupModule: DaroMLightPopupModule =
+    DaroMLightPopupModuleImpl(
+      context = reactContext,
+      getCurrentActivity = { getCurrentActivity() },
+    )
 
-    @ReactMethod
-    fun isLightPopupReady(
-        adUnitId: String,
-        promise: Promise,
-    ) {
-        daroMLightPopupModule.isLightPopupReady(adUnitId, promise)
-    }
+  @ReactMethod
+  fun isLightPopupReady(
+    adUnitId: String,
+    promise: Promise,
+  ) {
+    daroMLightPopupModule.isLightPopupReady(adUnitId, promise)
+  }
 
-    @ReactMethod
-    fun loadLightPopup(adUnitId: String) {
-        daroMLightPopupModule.loadLightPopup(adUnitId)
-    }
+  @ReactMethod
+  fun loadLightPopup(adUnitId: String) {
+    daroMLightPopupModule.loadLightPopup(adUnitId)
+  }
 
-    @ReactMethod
-    fun showLightPopup(adUnitId: String) {
-        daroMLightPopupModule.showLightPopup(adUnitId)
-    }
+  @ReactMethod
+  fun showLightPopup(adUnitId: String) {
+    daroMLightPopupModule.showLightPopup(adUnitId)
+  }
 
-    @ReactMethod
-    fun setLightPopupAdConfiguration(
-        adUnitId: String,
-        configurationMap: ReadableMap,
-    ) {
-        daroMLightPopupModule.setLightPopupAdConfiguration(adUnitId, configurationMap)
-    }
+  @ReactMethod
+  fun setLightPopupAdConfiguration(
+    adUnitId: String,
+    configurationMap: ReadableMap,
+  ) {
+    daroMLightPopupModule.setLightPopupAdConfiguration(adUnitId, configurationMap)
+  }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    internal abstract class DaroMBannerModule(
-        context: ReactContext,
-    ) : DaroMComponentModule(context) {
-        override fun getComponents(): MutableMap<String, Any> =
-            InternalDaroMBannerSize.entries.associate { it.key to it.name }.toMutableMap()
-    }
+  @OptIn(ExperimentalStdlibApi::class)
+  internal abstract class DaroMBannerModule(
+    context: ReactContext,
+  ) : DaroMComponentModule(context) {
+    override fun getComponents(): MutableMap<String, Any> = InternalDaroMBannerSize.entries.associate { it.key to it.name }.toMutableMap()
+  }
 
-    private val daroMBannerModule: DaroMBannerModule =
-        DaroMBannerViewModuleImpl(context = reactContext)
+  private val daroMBannerModule: DaroMBannerModule =
+    DaroMBannerViewModuleImpl(context = reactContext)
 }
