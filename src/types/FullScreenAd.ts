@@ -6,33 +6,27 @@ export type FullScreenAdType = {
   showAd: (adUnitId: string) => void;
 
   addAdLoadedEventListener: (listener: (adInfo: AdInfo) => void) => void;
-  removeAdLoadedEventListener: (listener: (adInfo: AdInfo) => void) => void;
+  removeAdLoadedEventListener: () => void;
 
   addAdLoadFailedEventListener: (
     listener: (errorInfo: AdLoadFailedInfo) => void
   ) => void;
-  removeAdLoadFailedEventListener: (
-    listener: (errorInfo: AdLoadFailedInfo) => void
-  ) => void;
+  removeAdLoadFailedEventListener: () => void;
 
   addAdClickedEventListener: (listener: (adInfo: AdInfo) => void) => void;
-  removeAdClickedEventListener: (listener: (adInfo: AdInfo) => void) => void;
+  removeAdClickedEventListener: () => void;
 
   addAdDisplayedEventListener: (listener: (adInfo: AdInfo) => void) => void;
-  removeAdDisplayedEventListener: (listener: (adInfo: AdInfo) => void) => void;
+  removeAdDisplayedEventListener: () => void;
 
   addAdFailedToDisplayEventListener: (
     listener: (errorInfo: AdDisplayFailedInfo) => void
   ) => void;
-  removeAdFailedToDisplayEventListener: (
-    listener: (errorInfo: AdDisplayFailedInfo) => void
-  ) => void;
+  removeAdFailedToDisplayEventListener: () => void;
 
   addAdHiddenEventListener: (listener: (adInfo: AdInfo) => void) => void;
-  removeAdHiddenEventListener: (listener: (adInfo: AdInfo) => void) => void;
+  removeAdHiddenEventListener: () => void;
 
   addAdImpressionRecordedListener: (listener: (adInfo: AdInfo) => void) => void;
-  removeAdImpressionRecordedListener: (
-    listener: (adInfo: AdInfo) => void
-  ) => void;
+  removeAdImpressionRecordedListener: () => void;
 };

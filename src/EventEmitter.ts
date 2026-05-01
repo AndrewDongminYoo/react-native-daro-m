@@ -14,6 +14,13 @@ export const addEventListener = <T extends AdEventObject>(
   const subscription: EventSubscription = emitter.addListener(event, handler);
   const currentSubscription = subscriptions[event];
   if (currentSubscription) {
+    if (__DEV__) {
+      console.warn(
+        `[DaroM] Replacing existing listener for event "${event}". ` +
+          'Only one listener per event type is supported. ' +
+          'Call removeEventListener before registering a new one.'
+      );
+    }
     currentSubscription.remove();
   }
   subscriptions[event] = subscription;

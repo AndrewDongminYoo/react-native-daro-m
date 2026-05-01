@@ -79,7 +79,6 @@ const setLightPopupAdConfiguration = (
     config.adMarkLabelBackgroundColor = colorToHex(
       config.adMarkLabelBackgroundColor
     );
-  if (config.closeButtonText) config.closeButtonText = config.closeButtonText;
   if (config.closeButtonTextColor)
     config.closeButtonTextColor = colorToHex(config.closeButtonTextColor);
   if (config.titleTextColor)
