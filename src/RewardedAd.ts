@@ -29,8 +29,11 @@ const loadAd = (adUnitId: string): void => {
   DaroMModule.loadRewardedAd(adUnitId);
 };
 
-const showAd = (adUnitId: string, customData?: string | null): void => {
-  DaroMModule.showRewardedAd(adUnitId, customData ?? null);
+const showAd = (
+  adUnitId: string,
+  customData?: string | null
+): Promise<void> => {
+  return DaroMModule.showRewardedAd(adUnitId, customData ?? null);
 };
 
 const addAdLoadedEventListener = (listener: (adInfo: AdInfo) => void): void => {

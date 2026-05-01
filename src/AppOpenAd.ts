@@ -31,8 +31,8 @@ const showAd = (
   adUnitId: string,
   placement?: string | null,
   customData?: string | null
-): void => {
-  DaroMModule.showAppOpenAd(
+): Promise<void> => {
+  return DaroMModule.showAppOpenAd(
     adUnitId,
     placement ?? undefined,
     customData ?? undefined

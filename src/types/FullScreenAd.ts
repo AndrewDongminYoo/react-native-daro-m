@@ -3,7 +3,7 @@ import type { AdDisplayFailedInfo, AdInfo, AdLoadFailedInfo } from './AdInfo';
 export type FullScreenAdType = {
   isAdReady: (adUnitId: string) => Promise<boolean>;
   loadAd: (adUnitId: string) => void;
-  showAd: (adUnitId: string) => void;
+  showAd: (adUnitId: string) => Promise<void>;
 
   addAdLoadedEventListener: (listener: (adInfo: AdInfo) => void) => void;
   removeAdLoadedEventListener: () => void;

@@ -5,5 +5,5 @@ export type AppOpenAdType = Omit<InterstitialAdType, 'showAd'> & {
     adUnitId: string,
     placement?: string | null,
     customData?: string | null
-  ): void;
+  ): Promise<void>;
 };

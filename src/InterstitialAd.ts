@@ -27,8 +27,8 @@ const loadAd = (adUnitId: string): void => {
   DaroMModule.loadInterstitial(adUnitId);
 };
 
-const showAd = (adUnitId: string): void => {
-  DaroMModule.showInterstitial(adUnitId);
+const showAd = (adUnitId: string): Promise<void> => {
+  return DaroMModule.showInterstitial(adUnitId);
 };
 
 const addAdLoadedEventListener = (listener: (adInfo: AdInfo) => void): void => {

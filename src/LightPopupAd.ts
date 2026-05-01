@@ -31,8 +31,8 @@ const loadAd = (adUnitId: string): void => {
   DaroMModule.loadLightPopup(adUnitId);
 };
 
-const showAd = (adUnitId: string): void => {
-  DaroMModule.showLightPopup(adUnitId);
+const showAd = (adUnitId: string): Promise<void> => {
+  return DaroMModule.showLightPopup(adUnitId);
 };
 
 function colorToHex(color: any): string | undefined {
