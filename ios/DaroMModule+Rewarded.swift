@@ -39,7 +39,7 @@ extension DaroMModule {
             return
         }
         DispatchQueue.main.async {
-            guard let window = UIApplication.shared.windows.first,
+            guard let window = self.keyWindow,
                   let viewController = window.rootViewController
             else {
                 reject("VIEW_CONTROLLER_NOT_FOUND", "Root view controller not found", nil)

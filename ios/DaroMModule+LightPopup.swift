@@ -40,7 +40,7 @@ extension DaroMModule {
             return
         }
         executeOnMainThread { [weak self] in
-            guard let viewController = UIApplication.shared.windows.first?.rootViewController else {
+            guard let viewController = self?.keyWindow?.rootViewController else {
                 reject("VIEW_CONTROLLER_NOT_FOUND", "Root view controller not found", nil)
                 return
             }
@@ -140,35 +140,12 @@ extension DaroMModule {
         }
     }
 
-    // 메인 스레드에서 실행하는 헬퍼 메서드
-    private func executeOnMainThread<T>(_ block: () -> T) -> T {
+    private func executeOnMainThread(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
-            return block()
+            block()
         } else {
-            var result: T!
-            DispatchQueue.main.sync {
-                result = block()
-            }
-            return result
+            DispatchQueue.main.async { block() }
         }
     }
 }
 
-extension DaroLightPopupConfiguration {
-    convenience init(from configuration: [String: Any]) {
-        self.init()
-        func setColorIfValid(_ key: String, setter: (UIColor) -> Void) {
-            if let colorString = configuration[key] as? String {
-                setter(UIColor(hex: colorString))
-            }
-        }
-
-        setColorIfValid("backgroundColor") { self.backgroundColor = $0 }
-        setColorIfValid("cardViewBackgroundColor") { self.cardViewBackgroundColor = $0 }
-        setColorIfValid("adMarkLabelTextColor") { self.adMarkLabelTextColor = $0 }
-        setColorIfValid("adMarkLabelBackgroundColor") { self.adMarkLabelBackgroundColor = $0 }
-        setColorIfValid("closeButtonTextColor") { self.closeButtonTextColor = $0 }
-        setColorIfValid("titleTextColor") { self.titleTextColor = $0 }
-        setColorIfValid("bodyTextColor") { self.bodyTextColor = $0 }
-    }
-}

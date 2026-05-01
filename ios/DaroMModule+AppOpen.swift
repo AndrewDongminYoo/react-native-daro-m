@@ -33,7 +33,7 @@ extension DaroMModule {
         _ adUnitId: String,
         customData _: String?,
         resolve: @escaping RCTPromiseResolveBlock,
-        reject: RCTPromiseRejectBlock
+        reject: @escaping RCTPromiseRejectBlock
     ) {
         guard let loadedAd = appOpenAds[adUnitId]?.loadedAd else {
             reject("APPOPEN_NOT_LOADED", "AppOpen ad not loaded", nil)

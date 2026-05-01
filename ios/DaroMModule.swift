@@ -194,10 +194,17 @@ extension DaroMModule {
         sendEvent(withName: event.rawValue, body: body)
     }
 
+    var keyWindow: UIWindow? {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first { $0.isKeyWindow }
+    }
+
     func restoreAdditionalSafeAreaInsets() {
         guard let savedInsets = savedAdditionalSafeAreaInsets else { return }
         DispatchQueue.main.async {
-            UIApplication.shared.windows.first?.rootViewController?.additionalSafeAreaInsets = savedInsets
+            self.keyWindow?.rootViewController?.additionalSafeAreaInsets = savedInsets
         }
         savedAdditionalSafeAreaInsets = nil
     }
