@@ -3,21 +3,21 @@ package com.darom.constants
 import droom.daro.core.model.DaroBannerSize
 
 internal enum class InternalDaroMBannerSize(
-    val key: String,
+  val key: String,
 ) {
-    BANNER("BANNER_AD_FORMAT_LABEL"),
-    MREC("MREC_AD_FORMAT_LABEL"),
-    UNKNOWN("UNKNOWN_AD_FORMAT_LABEL"),
-    ;
+  BANNER("BANNER_AD_FORMAT_LABEL"),
+  MREC("MREC_AD_FORMAT_LABEL"),
+  UNKNOWN("UNKNOWN_AD_FORMAT_LABEL"),
+  ;
 
-    fun toBannerSize(): DaroBannerSize? =
-        when (this) {
-            BANNER -> DaroBannerSize.Banner
-            MREC -> DaroBannerSize.MREC
-            UNKNOWN -> null
-        }
-
-    companion object {
-        fun fromName(name: String): InternalDaroMBannerSize = entries.firstOrNull { it.name == name } ?: UNKNOWN
+  fun toBannerSize(): DaroBannerSize? =
+    when (this) {
+      BANNER -> DaroBannerSize.Banner
+      MREC -> DaroBannerSize.MREC
+      UNKNOWN -> null
     }
+
+  companion object {
+    fun fromName(name: String): InternalDaroMBannerSize = entries.firstOrNull { it.name == name } ?: UNKNOWN
+  }
 }
