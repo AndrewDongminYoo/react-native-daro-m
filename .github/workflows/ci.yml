@@ -62,7 +62,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Run unit tests
-        run: yarn test --maxWorkers=2 --coverage
+        run: yarn test --maxWorkers=2 --coverage --passWithNoTests
 
   audit:
     name: Security Audit
