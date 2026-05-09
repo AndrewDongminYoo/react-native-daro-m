@@ -1,4 +1,4 @@
-# react-native-daro-m
+# @dev-teamremited/react-native-daro-m
 
 DaroM React Native Module for Android and iOS
 
@@ -11,7 +11,7 @@ yarn install
 ## Usage
 
 ```js
-import { DaroMView } from 'react-native-daro-m';
+import { DaroMView } from '@dev-teamremited/react-native-daro-m';
 
 // ...
 
