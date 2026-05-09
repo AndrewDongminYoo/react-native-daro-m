@@ -3,6 +3,12 @@ module.exports = {
   output: 'lib',
   targets: [
     [
+      'commonjs',
+      {
+        esm: true,
+      },
+    ],
+    [
       'module',
       {
         esm: true,
@@ -12,6 +18,7 @@ module.exports = {
       'typescript',
       {
         project: 'tsconfig.build.json',
+        esm: true,
       },
     ],
   ],
