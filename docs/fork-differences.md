@@ -148,7 +148,7 @@ These changes improve correctness or developer experience without requiring call
 `EventEmitter.ts` now emits a `console.warn` in `__DEV__` builds when `addXxx` is called
 while a previous listener is still registered:
 
-```
+```log
 [DaroM] Replacing existing listener for event "ON_INTERSTITIAL_LOADED_EVENT".
 Only one listener per event type is supported.
 Call removeEventListener before registering a new one.
