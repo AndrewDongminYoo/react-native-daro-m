@@ -1,0 +1,136 @@
+name: Upstream Watch
+
+# Polls the public npm registry for new releases of the unscoped upstream
+# package `react-native-daro-m` and opens a tracking issue when the version
+# advertised by npm exceeds the one pinned in `.upstream-version`.
+#
+# Security notes:
+#   - Triggers are `schedule` and `workflow_dispatch` only — no attacker can
+#     inject payloads via PR titles, issue bodies, or commit messages.
+#   - Every `${{ ... }}` expansion is forwarded into a `run:` block via the
+#     step's `env:` map, never interpolated directly into shell commands.
+#   - The only external input is `npm view ...` output, which is read into a
+#     shell variable and used only as a tag/title string.
+
+on:
+  schedule:
+    # Daily at 09:00 KST (00:00 UTC). DaroM publishes during KST business
+    # hours, so a single morning check is enough to surface new releases.
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Check upstream npm version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Read pinned upstream version
+        id: pinned
+        run: |
+          if [ ! -f .upstream-version ]; then
+            echo "::error::.upstream-version not found"
+            exit 1
+          fi
+          version="$(tr -d '[:space:]' < .upstream-version)"
+          if [ -z "$version" ]; then
+            echo "::error::.upstream-version is empty"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Query npm for latest upstream version
+        id: latest
+        run: |
+          latest="$(npm view react-native-daro-m version)"
+          if [ -z "$latest" ]; then
+            echo "::error::Failed to read latest version from npm"
+            exit 1
+          fi
+          echo "version=$latest" >> "$GITHUB_OUTPUT"
+
+      - name: Compare versions
+        id: compare
+        env:
+          PINNED: ${{ steps.pinned.outputs.version }}
+          LATEST: ${{ steps.latest.outputs.version }}
+        run: |
+          echo "Pinned : $PINNED"
+          echo "Latest : $LATEST"
+          if [ "$PINNED" = "$LATEST" ]; then
+            echo "new_release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new_release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Find existing tracking issue
+        if: steps.compare.outputs.new_release == 'true'
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LATEST: ${{ steps.latest.outputs.version }}
+        run: |
+          number="$(gh issue list \
+            --state open \
+            --label upstream-sync \
+            --search "in:title \"react-native-daro-m@${LATEST}\"" \
+            --json number \
+            --jq '.[0].number // empty')"
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      - name: Open tracking issue
+        if: steps.compare.outputs.new_release == 'true' && steps.existing.outputs.number == ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PINNED: ${{ steps.pinned.outputs.version }}
+          LATEST: ${{ steps.latest.outputs.version }}
+        run: |
+          published_at="$(npm view "react-native-daro-m@${LATEST}" time.modified || echo 'unknown')"
+          {
+            echo "A new upstream release of [\`react-native-daro-m\`](https://www.npmjs.com/package/react-native-daro-m) was detected."
+            echo ""
+            echo "| Field          | Value |"
+            echo "| -------------- | ----- |"
+            echo "| Pinned in fork | \`${PINNED}\` |"
+            echo "| Latest on npm  | \`${LATEST}\` |"
+            echo "| Published      | ${published_at} |"
+            echo "| npm tarball    | https://www.npmjs.com/package/react-native-daro-m/v/${LATEST} |"
+            echo ""
+            echo "### Sync checklist"
+            echo ""
+            echo "- [ ] \`npm pack react-native-daro-m@${LATEST}\` and extract into a scratch dir"
+            echo "- [ ] Diff \`src/\`, \`android/\`, \`ios/\` against this fork"
+            echo "- [ ] Re-apply this fork's functional patches (see README → \"Differences from upstream\")"
+            echo "- [ ] Update \`.upstream-version\` to \`${LATEST}\`"
+            echo "- [ ] Run \`yarn typecheck && yarn lint && yarn test && yarn prepare\`"
+            echo "- [ ] Bump fork version and cut a release if behavior changed"
+            echo ""
+            echo "_Filed automatically by \`.github/workflows/upstream-watch.yml\`._"
+          } > issue-body.md
+          gh issue create \
+            --title "chore: sync upstream react-native-daro-m@${LATEST}" \
+            --label upstream-sync \
+            --body-file issue-body.md
+
+      - name: Skip — tracking issue already open
+        if: steps.compare.outputs.new_release == 'true' && steps.existing.outputs.number != ''
+        env:
+          NUMBER: ${{ steps.existing.outputs.number }}
+        run: echo "Existing tracking issue #${NUMBER} is open; nothing to do."
+
+      - name: Up to date
+        if: steps.compare.outputs.new_release == 'false'
+        env:
+          PINNED: ${{ steps.pinned.outputs.version }}
+        run: echo "Fork is current with upstream@${PINNED}."
