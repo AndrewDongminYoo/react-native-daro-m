@@ -108,24 +108,40 @@ class DaroMModule: RCTEventEmitter {
             return
         }
 
-        // 초기화 진행
-        DaroAds.shared.logLevel = .debug
-        DaroAds.shared.initialized { error in
-            if let error {
-                Self.logger.error("SDK initialization failed: \(error.localizedDescription)")
-                reject("INIT_ERROR", error.localizedDescription, error)
-            } else {
-                Self.sdkInitialized = true
-                Self.logger.info("SDK initialized successfully")
-                resolve(())
+        // DaroAds.shared.initialized internally uses dispatch_once that
+        // queries UIApplication.applicationState — Main Thread Checker
+        // flags this when called from a background queue. Under the New
+        // Architecture interop, all native modules execute on the shared
+        // `com.meta.react.turbomodulemanager.queue` (not main), so the
+        // warning fires reliably. Forcing the SDK entry point onto the
+        // main queue lets the once-block capture main as its execution
+        // thread. See ADR-005 §2 for the trade-off analysis.
+        DispatchQueue.main.async {
+            DaroAds.shared.logLevel = .debug
+            DaroAds.shared.initialized { error in
+                if let error {
+                    Self.logger.error("SDK initialization failed: \(error.localizedDescription)")
+                    reject("INIT_ERROR", error.localizedDescription, error)
+                } else {
+                    Self.sdkInitialized = true
+                    Self.logger.info("SDK initialized successfully")
+                    resolve(())
+                }
             }
         }
     }
 
     @objc(showMediationDebugger::)
-    func showMediationDebugger(resolve: RCTPromiseResolveBlock, reject _: RCTPromiseRejectBlock) {
-        ALSdk.shared().showMediationDebugger()
-        resolve(())
+    func showMediationDebugger(
+        resolve: @escaping RCTPromiseResolveBlock,
+        reject _: RCTPromiseRejectBlock
+    ) {
+        // Presents a UIViewController. Must be on the main thread for the
+        // same reason every other show* method already main-dispatches.
+        DispatchQueue.main.async {
+            ALSdk.shared().showMediationDebugger()
+            resolve(())
+        }
     }
 
     @objc(setUserId:::)

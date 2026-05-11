@@ -59,11 +59,13 @@ Banner load failures retry from inside the SDK with rough exponential backoff:
 
 **Host-app implication**: do not layer a custom retry loop on top of `loadAd()`. The SDK already retries — adding another tier would double the request rate and burn through ad inventory quickly. If the host needs a different cadence (e.g. give up after N attempts), it should debounce/cancel rather than retry.
 
-## Main Thread Checker — still present after init
+## Main Thread Checker — resolved via targeted main-dispatch
 
 The `UIApplication.applicationState` background-thread access (documented in ADR-005 §2) fires both _before_ and _after_ SDK initialization, so it is not gated by license/app-key state. It is a closed-source SDK bug; our bridge does not invoke `applicationState` anywhere.
 
-Open question (carried forward to a future ADR if pursued): override `methodQueue` on `DaroMModule` to force main-thread dispatch.
+**Resolution (later same day)**: ADR-005 §2 open question closed. `initializeSdk` and `showMediationDebugger` in `ios/DaroMModule.swift` are now wrapped in `DispatchQueue.main.async` — added as fork patch #4 (renumbered the package-identity item to #5). The stack trace traced the violation to a `dispatch_once` inside `DaroAds.shared.initialized`; `dispatch_once` captures the calling thread for the once-block, so forcing the first call onto main is sufficient. A blanket `methodQueue` override was rejected — would serialize every method (including high-frequency `isXxxReady` / `loadXxx`) through main with no payoff for the methods that do not trigger the warning.
+
+**Verified on device (11:32 run)**: rebuilt the example with patch #4 applied. Main Thread Checker did not fire during SDK init or any subsequent ad call. The previously-observed `Main Thread Checker: UI API called on a background thread: -[UIApplication applicationState]` lines are absent from the new log. All four ad-load paths (Banner / Interstitial / Rewarded / LightPopup-placeholder) and the full Rewarded `showAd → reward → hidden → reload` sequence completed without the warning.
 
 ## Promise<void> patch validated by dogfooding
 
