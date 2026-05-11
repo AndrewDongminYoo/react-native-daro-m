@@ -97,3 +97,26 @@ yarn example android          # Android
 The smoke screen prints every native event to an in-app log. Tap `Interstitial` / `Rewarded` / `LightPopup` to verify that `showAd()` returns a `Promise<void>` that resolves or rejects (the fork's primary patch — upstream returns `void` and swallows rejections).
 
 Replace the placeholder ad unit IDs in `src/App.tsx` with values from your DaroM dashboard before testing on a real device.
+
+## Recommended host-app pattern
+
+The fullscreen ad APIs (`InterstitialAd`, `RewardedAd`, `LightPopupAd`) are an event-driven 2-step protocol:
+
+```log
+loadAd(unit)  ─► (network round-trip)  ─► onAdLoaded   = ready
+                                       ╲► onAdLoadFailed = not ready
+showAd(unit)  ─► (must be after onAdLoaded)
+onAdHidden    ─► caller responsible for next loadAd()
+```
+
+Calling `showAd()` before `onAdLoaded` arrives produces a real `Promise<void>` rejection (`"Error: Interstitial ad not loaded"`) — observable only because of the fork's patch. Upstream's `void` would silently no-op and the user would see "I tapped the button but nothing happened."
+
+The example in `src/App.tsx` implements the recommended pattern:
+
+1. Track a per-format `*Ready` boolean in state.
+2. On SDK `initialize()` resolve, pre-load every format you intend to show.
+3. Flip the corresponding ready flag in `onAdLoaded` / clear it in `onAdLoadFailed` / `onAdHidden`.
+4. Trigger the next `loadAd()` inside the `onAdHidden` handler — never on the show callsite.
+5. Have the button handler check the ready flag and surface a "not ready" message if the user taps too early.
+
+Do **not** layer additional retry logic on top of `loadAd()`. The DaroM/AppLovin SDK retries internally with exponential backoff (~1s, 2s, 3s, 5s, 8s — see [`docs/notes/2026-05-11-new-arch-validation.md`](../docs/notes/2026-05-11-new-arch-validation.md)). Adding another tier doubles the request rate and exhausts ad inventory.
