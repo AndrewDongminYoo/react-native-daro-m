@@ -16,7 +16,7 @@ on:
   schedule:
     # Daily at 09:00 KST (00:00 UTC). DaroM publishes during KST business
     # hours, so a single morning check is enough to surface new releases.
-    - cron: '0 0 * * *'
+    - cron: 0 0 * * *
   workflow_dispatch:
 
 permissions:
