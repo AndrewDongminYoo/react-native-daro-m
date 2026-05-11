@@ -11,7 +11,9 @@ buildscript
 Buildscript
 daro
 darom
+Dongmin
 droom
+gradlew
 interstitials
 LIGHTPOPUP
 Lovin
@@ -19,10 +21,12 @@ Millis
 MREC
 ndkversion
 nonnull
+podspec
 QWER
 RRGGBB
 Spannable
 stdlib
 Subview
 Superview
+teamremited
 uimanager
