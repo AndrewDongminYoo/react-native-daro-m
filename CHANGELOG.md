@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 For an itemized list of every difference between this fork and upstream `react-native-daro-m`, see [`docs/fork-differences.md`](./docs/fork-differences.md).
 
+## [1.1.1] — 2026-05-11
+
+Hotfix for an iOS module-init crash introduced in 1.1.0.
+
+### Fixed
+
+- **iOS module-init crash on legacy bridge.** v1.1.0 changed `src/EventEmitter.ts` to construct `new NativeEventEmitter()` without a module argument, intending to silence two DEV-mode warnings about a missing `addListener` / `removeListeners` on the JS module surface. React Native's `NativeEventEmitter` constructor on iOS enforces `invariant(nativeModule != null, …)` at module-init time, so consuming the package on iOS under legacy bridge crashed immediately with `Cannot read property 'addEventListener' of undefined`. v1.1.1 restores the constructor argument and instead polyfills `addListener` / `removeListeners` as no-ops on the JS module object before construction, which silences the warnings and satisfies the invariant. See [`docs/notes/2026-05-11-new-arch-validation.md → §NativeEventEmitter regression`](./docs/notes/2026-05-11-new-arch-validation.md) for the post-mortem.
+
 ## [1.1.0] — 2026-05-11
 
 First release validated end-to-end against React Native's New Architecture (`fabric: true` on iPhone + `newArchEnabled=true` on Android device, all four ad formats with reward callbacks and `customData` round-trip). See [`docs/notes/2026-05-11-new-arch-validation.md`](./docs/notes/2026-05-11-new-arch-validation.md) for the validation log.
