@@ -1,97 +1,99 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# `@dev-teamremited/react-native-daro-m` example
 
-# Getting Started
+A smoke-test workspace that exercises the fork's public API (Banner / Interstitial / Rewarded / LightPopup) on iOS and Android with **New Architecture enabled** (`newArchEnabled=true` on Android, `RCT_NEW_ARCH_ENABLED=1` in `ios/.xcode.env`).
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+This exists primarily to validate [ADR-005](../docs/adr/005-defer-turbomodule-migration.md) — that the legacy native bridge keeps working through the New Architecture interop layer without a TurboModule/Fabric rewrite.
 
-## Step 1: Start Metro
+## DaroM SDK license keys
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+The DaroM SDK refuses to initialize without per-platform license files issued by [dashboard.daro.so](https://dashboard.daro.so):
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+| Platform | File                   | Required location                                   |
+| -------- | ---------------------- | --------------------------------------------------- |
+| iOS      | `ios-daro-key.txt`     | Must be in the app's **main bundle** at runtime     |
+| Android  | `android-daro-key.txt` | Must be on the app's resource/asset path at runtime |
 
-```sh
-# Using npm
-npm start
+Both filenames are `.gitignore`d at the repo root — never commit them.
 
-# OR using Yarn
-yarn start
+> The iOS side additionally needs a `DaroAppKey` string in `Info.plist` (and the Android equivalent is `com.google.android.gms.ads.APPLICATION_ID` meta-data in `AndroidManifest.xml` for the underlying AppLovin mediation). The dashboard issues both the app key (public identifier) and the license file (encrypted secret) — the SDK validates them together at startup.
+
+### iOS: dragging the file in is not enough
+
+`DaroAds`/`DaroService` resolves the key via roughly `Bundle.main.url(forResource: "ios-daro-key", withExtension: "txt")`. For that call to return non-nil, the file must end up inside `<YourApp>.app/ios-daro-key.txt` after build — which only happens if it is part of the **Copy Bundle Resources** build phase of the app target.
+
+Common failure mode (and what we hit in this example workspace): the file is dragged into the Xcode navigator but the "Add to targets" checkbox in the dialog is unchecked or dismissed. The file then exists as a `PBXFileReference` only — no `PBXBuildFile`, no entry in `PBXResourcesBuildPhase` — so it never enters the bundle.
+
+**Symptom**: SDK throws
+
+```log
+DaroM/DaroService.swift:151: Fatal error: ios-daro-key.txt file not found.
+  Please ensure the file is included in your project.
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+**Diagnosis**:
 
 ```sh
-# Using npm
-npm run android
+# Verify the file made it into the built app bundle. Empty output = not bundled.
+find example/ios/build -name 'ios-daro-key.txt'
 
-# OR using Yarn
-yarn android
+# Or grep pbxproj for the *PBXBuildFile* / Resources phase entry (not just the
+# bare PBXFileReference). Two hits means: reference only — not bundled.
+grep -c ios-daro-key example/ios/ReactNativeDaroMExample.xcodeproj/project.pbxproj
 ```
 
-### iOS
+**Fix**: in Xcode, select `ios-daro-key.txt` in the navigator, open the File Inspector (right pane), and tick the host target under **Target Membership**. Re-run `xcodebuild` / `yarn ios` and confirm the file appears in `<YourApp>.app/`.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+### Build flavors
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+The host app at `../youngkeul-rn-app` uses `development` / `staging` / `production` flavors with separate bundle IDs and separate DaroM dashboard apps. Each flavor needs its own key file pair.
+
+Two viable patterns:
+
+1. **Multiple Xcode targets** — one target per flavor, each with its own `ios-daro-key.txt` in its `Copy Bundle Resources`. Simple, but you maintain N targets.
+2. **Single target + per-configuration script** — keep flavor-suffixed files outside the bundle (`ios-daro-key.development.txt`, `.staging.txt`, `.production.txt`), and add a "Run Script" build phase that copies the right one based on `${CONFIGURATION}`. Less project bloat, but you must not also add `ios-daro-key.txt` itself to Copy Bundle Resources — the script writes the final file.
+
+For pattern 2, the script and matching Build Phase ordering look like this:
 
 ```sh
-bundle install
+# Run Script build phase — place AFTER "Copy Bundle Resources".
+# Input File Lists / Output File Lists can be left empty; the script
+# unconditionally overwrites the output every build so Xcode's
+# incremental-build heuristics will not skip it.
+set -euo pipefail
+
+case "${CONFIGURATION}" in
+  *Debug*|*Development*) FLAVOR=development ;;
+  *Staging*)             FLAVOR=staging ;;
+  *Release*|*Production*) FLAVOR=production ;;
+  *) echo "error: no DaroM key mapping for configuration '${CONFIGURATION}'"; exit 1 ;;
+esac
+
+SRC="${SRCROOT}/keys/ios-daro-key.${FLAVOR}.txt"
+DST="${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ios-daro-key.txt"
+
+if [ ! -f "${SRC}" ]; then
+  echo "error: ${SRC} is missing — download from dashboard.daro.so"
+  exit 1
+fi
+
+cp "${SRC}" "${DST}"
+echo "DaroM key: copied ${FLAVOR} → ${DST}"
 ```
 
-Then, and every time you update your native dependencies, run:
+Pair this with per-configuration `Info.plist` values for `DaroAppKey` (the public identifier issued alongside each license file). The simplest way is to declare a build setting `DARO_APP_KEY` per configuration in the xcconfig and reference it from Info.plist as `$(DARO_APP_KEY)`. The same idea applies to `GADApplicationIdentifier`.
+
+The Android equivalent is simpler: place each `android-daro-key.txt` under `app/src/<flavor>/assets/` so Gradle merges the right one based on `productFlavors`. No additional script needed.
+
+## Running
 
 ```sh
-bundle exec pod install
+# From the repo root
+yarn install
+yarn example start            # Metro
+yarn example ios              # iOS
+yarn example android          # Android
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+The smoke screen prints every native event to an in-app log. Tap `Interstitial` / `Rewarded` / `LightPopup` to verify that `showAd()` returns a `Promise<void>` that resolves or rejects (the fork's primary patch — upstream returns `void` and swallows rejections).
 
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Replace the placeholder ad unit IDs in `src/App.tsx` with values from your DaroM dashboard before testing on a real device.
