@@ -84,3 +84,11 @@ android/generated
 
 # React Native Nitro Modules
 nitrogen/
+
+# DaroM SDK license key files — issued per-app by the DaroM dashboard, must
+# never be committed. See example/README.md for how to provision them per
+# build flavor.
+ios-daro-key.txt
+android-daro-key.txt
+**/ios-daro-key.txt
+**/android-daro-key.txt
