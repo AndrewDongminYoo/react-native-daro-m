@@ -306,8 +306,36 @@ Reward payload round-trips with the `customData` parameter on Android exactly as
 
 2. **`new NativeEventEmitter() ... without required addListener / removeListeners methods`** — fired twice on first listener registration. `src/EventEmitter.ts` constructed `new NativeEventEmitter(NativeModules.DaroMModule)` (the legacy pattern). Under Bridgeless / New Arch, RN's `NativeEventEmitter` expects `addListener` and `removeListeners` to be exposed on the JS module object even though the native `RCTEventEmitter` superclass already implements them.
 
-   **Resolved**: Option A applied — dropped the constructor argument. `src/EventEmitter.ts` now uses `new NativeEventEmitter()` (no args). The native side does not gate emission on JS listener count for this module, so the no-arg form is behaviorally equivalent and silences the warning under New Architecture. Documented in `docs/fork-differences.md → Non-Breaking Improvements`. Rejected alternatives:
-   - JS-side `addListener` / `removeListeners` shims on `NativeModules.DaroMModule` — would silence the warning but expand fork divergence with no functional gain
-   - Leave as-is — would leak DEV-mode noise that masks real warnings during host-app migration smoke tests
+   **Initial resolution (v1.1.0)**: Option A applied — dropped the constructor argument. `src/EventEmitter.ts` used `new NativeEventEmitter()` (no args).
+
+   **Regression discovered after v1.1.0 publish**: the host app (`host-rn-app` on RN 0.79.0, legacy bridge, `newArchEnabled=false`) crashed at module-init with `Cannot read property 'addEventListener' of undefined` on iOS. Inspecting `node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter.js` revealed:
+
+```js
+constructor(nativeModule: ?NativeModule) {
+  if (Platform.OS === 'ios') {
+    invariant(
+      nativeModule != null,
+      '`new NativeEventEmitter()` requires a non-null argument.',
+    );
+  }
+  ...
+}
+```
+
+RN's iOS invariant throws synchronously the moment the file is imported. Option A was incorrect under legacy bridge; the original DEV-mode warnings were never going to be silenced by removing the argument.
+
+**Re-resolved (v1.1.1)**: Option B applied — keep the constructor argument and polyfill the missing JS methods as no-ops on the module object before construction:
+
+```ts
+if (DaroMModule) {
+  if (typeof DaroMModule.addListener !== 'function')
+    DaroMModule.addListener = () => {};
+  if (typeof DaroMModule.removeListeners !== 'function')
+    DaroMModule.removeListeners = () => {};
+}
+const emitter = new NativeEventEmitter(DaroMModule);
+```
+
+RN sees its contract as satisfied (no warnings) and the invariant is satisfied (no crash). `RCTEventEmitter` broadcasts events regardless of JS listener-count signaling, so the stubs are functionally equivalent. The earlier "rejected alternative" of polyfilled shims was actually the correct path; the rejection rationale was wrong.
 
 The host app (`host-rn-app`) plans `development` / `staging` / `production` flavors with distinct bundle IDs and distinct DaroM dashboard apps. Each flavor needs its **own** identity 3-tuple. See [example/README.md → Build flavors](../../example/README.md) for the two viable patterns (multi-target vs per-configuration Run Script). The Run Script approach is the lower-friction choice for a single Xcode target.

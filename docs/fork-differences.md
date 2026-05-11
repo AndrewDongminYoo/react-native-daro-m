@@ -172,13 +172,13 @@ when `null` or `false`, preventing a flash of nothing on re-mounts.
 `StyleSheet` references. The cast is replaced with `StyleSheet.flatten(style) ?? {}`, which
 correctly resolves all React Native style variants before accessing individual properties.
 
-### `NativeEventEmitter` constructed without the legacy module argument
+### `NativeEventEmitter` listener-count methods polyfilled on the JS module surface
 
-`src/EventEmitter.ts` previously called `new NativeEventEmitter(NativeModules.DaroMModule)`.
-Under Bridgeless / New Architecture, passing a non-null module argument makes React Native
-probe for `addListener` / `removeListeners` methods on the JS module surface. The native
-`RCTEventEmitter` superclass provides those, but they are not surfaced through the New
-Architecture interop layer — so every listener registration emits two DEV-mode warnings:
+`src/EventEmitter.ts` constructs `new NativeEventEmitter(NativeModules.DaroMModule)`.
+React Native's `NativeEventEmitter` probes the module object for `addListener` and
+`removeListeners` methods to manage native listener counts. The native `RCTEventEmitter`
+superclass implements both, but they are **not exposed through the JS interop layer** — so
+every listener registration emits two DEV-mode warnings:
 
 ```log
 new NativeEventEmitter() was called with a non-null argument without the required
@@ -187,10 +187,27 @@ new NativeEventEmitter() was called with a non-null argument without the require
 removeListeners method.
 ```
 
-The native side does not gate event emission on JS listener count for this module, so
-dropping the argument is behaviorally equivalent. The fork now calls
-`new NativeEventEmitter()` with no arguments, silencing the warnings under New Architecture
-without changing event flow under legacy.
+The fork polyfills both as no-ops on the JS module object before the constructor runs:
+
+```ts
+if (DaroMModule) {
+  if (typeof DaroMModule.addListener !== 'function')
+    DaroMModule.addListener = () => {};
+  if (typeof DaroMModule.removeListeners !== 'function')
+    DaroMModule.removeListeners = () => {};
+}
+const emitter = new NativeEventEmitter(DaroMModule);
+```
+
+This silences both warnings without changing native behavior — `RCTEventEmitter` broadcasts
+events regardless of JS listener-count signaling, so the no-op stubs are functionally
+equivalent to having the methods bridged.
+
+> **History note**: An earlier attempt (v1.1.0) tried to silence the warnings by omitting
+> the constructor argument entirely (`new NativeEventEmitter()`). This regressed because
+> RN's `NativeEventEmitter` on iOS enforces `invariant(nativeModule != null, ...)` at
+> module-init time and crashes the host app the moment the file is imported. v1.1.1 replaces
+> that approach with the polyfill above, which keeps the invariant satisfied.
 
 ---
 
