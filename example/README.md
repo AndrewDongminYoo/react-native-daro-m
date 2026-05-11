@@ -135,6 +135,41 @@ Before shipping the host app with this fork:
 
 ### Android
 
+The DaroM Android SDK is distributed via the `so.daro:daro-plugin` Gradle plugin (analogous to how Firebase uses `google-services`). The library declares `so.daro:daro-m` as `compileOnly`, so the host app must explicitly:
+
+1. Register the AppLovin and Kakao Nexus Maven repos:
+   ```gradle
+   // android/build.gradle  buildscript.repositories AND allprojects/dependencyResolutionManagement.repositories
+   maven { url = uri("https://artifacts.applovin.com/android") }
+   maven { url "https://devrepo.kakao.com/nexus/content/groups/public/" }
+   ```
+2. Add the DaroM Gradle plugin classpath:
+   ```gradle
+   // android/build.gradle  buildscript.dependencies
+   classpath("so.daro:daro-plugin:1.0.12")
+   ```
+3. Apply the plugin and declare the SDK as a runtime dependency:
+
+   ```gradle
+   // android/app/build.gradle  (top + dependencies block)
+   apply plugin: "so.daro.m"
+
+   dependencies {
+       implementation("so.daro:daro-m:1.3.4")
+   }
+   ```
+
+4. Define the `daroAppKey` ext property in `android/build.gradle` so the plugin can resolve it at build time:
+   ```gradle
+   buildscript {
+       ext { daroAppKey = "<your-uuid-from-dashboard>" }
+   }
+   ```
+
+Without these, the app build succeeds (the library uses `compileOnly`) but **fails at runtime** with `NoClassDefFoundError: droom.daro.view.DaroAdViewListener` when React Native tries to instantiate the view managers in `DaroMPackage.createViewManagers`.
+
+Other Android requirements:
+
 - [ ] Per-flavor `android-daro-key.txt` placed under `app/src/<flavor>/assets/` so Gradle merges the right one.
 - [ ] `com.google.android.gms.ads.APPLICATION_ID` meta-data set in `AndroidManifest.xml` per flavor.
 

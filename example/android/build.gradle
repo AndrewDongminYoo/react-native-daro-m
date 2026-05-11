@@ -1,4 +1,6 @@
 buildscript {
+    // Daro Dashboard app ID
+    ext.daroAppKey = "<your-daro-dashboard-uuid>"
     ext {
         buildToolsVersion = "36.0.0"
         minSdkVersion = 24
