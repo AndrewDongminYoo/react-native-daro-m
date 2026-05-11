@@ -28,6 +28,21 @@ apply plugin: "kotlin-android"
 
 if (isNewArchitectureEnabled()) {
   apply plugin: "com.facebook.react"
+
+  // Scope codegen to this library's own src/ only. Without this block the
+  // React gradle plugin scans the entire consuming workspace's node_modules
+  // and generates ManagerDelegate classes for every package with
+  // codegenConfig — which lands the same classes in this library's AAR and
+  // in the consumer's transitive AARs, producing a "Type ... is defined multiple times" failure in
+  // :app:mergeLibDexDebug. This library exposes no codegen surface (no
+  // codegenConfig in package.json, no *NativeComponent or *Spec files in
+  // src/, no TurboModule classes in android/), so the scoped scan yields
+  // nothing, which is the intended behavior.
+  react {
+    jsRootDir = file("../src/")
+    libraryName = "DaroM"
+    codegenJavaPackageName = "com.darom"
+  }
 }
 
 def getExtOrDefault(name) {

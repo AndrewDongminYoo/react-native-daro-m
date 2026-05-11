@@ -67,6 +67,37 @@ The `UIApplication.applicationState` background-thread access (documented in ADR
 
 **Verified on device (11:32 run)**: rebuilt the example with patch #4 applied. Main Thread Checker did not fire during SDK init or any subsequent ad call. The previously-observed `Main Thread Checker: UI API called on a background thread: -[UIApplication applicationState]` lines are absent from the new log. All four ad-load paths (Banner / Interstitial / Rewarded / LightPopup-placeholder) and the full Rewarded `showAd → reward → hidden → reload` sequence completed without the warning.
 
+## Android dex merge conflict — codegen scoping fix
+
+A separate build failure surfaced when running `yarn example android`:
+
+```log
+> Task :app:mergeLibDexDebug FAILED
+Type com.facebook.react.viewmanagers.RNCSafeAreaProviderManagerDelegate is defined multiple times:
+  react-native-daro-m/android/build/.transforms/.../RNCSafeAreaProviderManagerDelegate.dex,
+  example/node_modules/react-native-safe-area-context/android/build/.transforms/.../RNCSafeAreaProviderManagerDelegate.dex
+```
+
+Root cause: `android/build.gradle` applied the `com.facebook.react` plugin under New Architecture _without_ a scoping `react { }` block. The plugin's default codegen scan walks the entire consuming workspace's `node_modules` for packages declaring `codegenConfig` and emits the corresponding `*ManagerDelegate` classes into the library AAR — landing them in this fork's AAR even though the fork itself has no codegen surface (no `codegenConfig` in `package.json`, no `*NativeComponent` / `*Spec` files in `src/`, no TurboModule classes in `android/`).
+
+The same class then gets emitted into the _real_ owning library's AAR (`react-native-safe-area-context`), and Android's D8 dex merger refuses two definitions of the same type.
+
+**Fix (added as a row to `docs/fork-differences.md → Native Bug Fixes (Android)`)**:
+
+```gradle
+react {
+  jsRootDir = file("../src/")
+  libraryName = "DaroM"
+  codegenJavaPackageName = "com.darom"
+}
+```
+
+Scoping `jsRootDir` to this library's own `src/` makes codegen's scan find nothing — which is correct, since there is no codegen surface — and the AAR no longer carries foreign `*ManagerDelegate` classes.
+
+**Verification**: rebuilt with `./gradlew clean && ./gradlew :app:mergeLibDexDebug` (in `example/android/`). Task succeeded. The library's bundleLibRuntime dex output now contains only `com/darom/*` classes; no `com/facebook/react/viewmanagers/*` entries.
+
+This bug also exists in upstream (same `apply plugin: "com.facebook.react"` without scoping). Any consumer enabling New Arch with a codegen-using sibling library (safe-area-context, screens, masked-view, etc.) would hit it. Worth reporting upstream once a stable channel exists.
+
 ## Promise<void> patch validated by dogfooding
 
 A later run of the example (after the bundle-ID fix landed and banner loads succeeded) reproduced the original motivation for fork patch #1 live:
