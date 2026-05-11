@@ -137,12 +137,24 @@ Before shipping the host app with this fork:
 
 The DaroM Android SDK is distributed via the `so.daro:daro-plugin` Gradle plugin (analogous to how Firebase uses `google-services`). The library declares `so.daro:daro-m` as `compileOnly`, so the host app must explicitly:
 
-1. Register the AppLovin and Kakao Nexus Maven repos:
+1. Register every mediation-network Maven repo the DaroM SDK transitively pulls. AppLovin's own repo answers `HEAD` requests for foreign artifacts with `HTTP 403` instead of `404`, which makes Gradle stop on the wrong repo if AppLovin is listed first — so **AppLovin must be the last entry**:
+
    ```gradle
-   // android/build.gradle  buildscript.repositories AND allprojects/dependencyResolutionManagement.repositories
-   maven { url = uri("https://artifacts.applovin.com/android") }
-   maven { url "https://devrepo.kakao.com/nexus/content/groups/public/" }
+   // android/build.gradle  allprojects.repositories
+   // (buildscript.repositories only needs the Kakao Nexus entry for the
+   //  so.daro:daro-plugin classpath; runtime resolution lives here.)
+   maven { url "https://devrepo.kakao.com/nexus/content/groups/public/" }                                 // DaroM SDK
+   maven { url "https://android-sdk.is.com" }                                                              // IronSource
+   maven { url "https://artifact.bytedance.com/repository/pangle" }                                        // Pangle (ByteDance)
+   maven { url "https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea" }           // Mintegral
+   maven { url "https://maven.ogury.co" }                                                                  // Ogury
+   maven { url "https://s3.amazonaws.com/smaato-sdk-releases/" }                                           // Smaato
+   maven { url "https://verve.jfrog.io/artifactory/verve-gradle-release" }                                 // Verve / HyBid
+   maven { url "https://cboost.jfrog.io/artifactory/chartboost-ads" }                                      // Chartboost ads
+   maven { url "https://cboost.jfrog.io/artifactory/chartboost-mediation" }                                // Chartboost mediation
+   maven { url = uri("https://artifacts.applovin.com/android") }                                           // AppLovin — last
    ```
+
 2. Add the DaroM Gradle plugin classpath:
    ```gradle
    // android/build.gradle  buildscript.dependencies
