@@ -82,7 +82,7 @@ echo "DaroM key: copied ${FLAVOR} → ${DST}"
 
 Pair this with per-configuration `Info.plist` values for `DaroAppKey` (the public identifier issued alongside each license file). The simplest way is to declare a build setting `DARO_APP_KEY` per configuration in the xcconfig and reference it from Info.plist as `$(DARO_APP_KEY)`. The same idea applies to `GADApplicationIdentifier`.
 
-The Android equivalent is simpler: place each `android-daro-key.txt` under `app/src/<flavor>/assets/` so Gradle merges the right one based on `productFlavors`. No additional script needed.
+The Android equivalent is simpler: place each `daro-key.txt` (or `android-daro-key.txt`) under `app/src/<flavor>/` so Gradle's variant-aware source merger picks the right one based on `productFlavors`. No additional script needed — the `so.daro.m` plugin reads from the merged variant source set.
 
 ## Running
 
@@ -168,10 +168,16 @@ The DaroM Android SDK is distributed via the `so.daro:daro-plugin` Gradle plugin
 
 Without these, the app build succeeds (the library uses `compileOnly`) but **fails at runtime** with `NoClassDefFoundError: droom.daro.view.DaroAdViewListener` when React Native tries to instantiate the view managers in `DaroMPackage.createViewManagers`.
 
+5. Drop the dashboard-issued license file into `android/app/`. The `so.daro.m` plugin auto-detects one of (in priority order):
+   - `android/app/daro-key.txt`
+   - `android/app/android-daro-key.txt`
+     At apply time the plugin logs `🔍 [DARO] Found AppKey for variant <variant>` followed by `Config file path: .../daro-key.txt, exists: true`. If `exists: false` it fails with `설정 파일이 없습니다 (variant: <variant>)`.
+
+   For build flavors, Gradle merges files from `android/app/src/<flavor>/` over `android/app/src/main/`, so you can keep per-flavor key files at `android/app/src/<flavor>/daro-key.txt` and they will be picked up automatically.
+
 Other Android requirements:
 
-- [ ] Per-flavor `android-daro-key.txt` placed under `app/src/<flavor>/assets/` so Gradle merges the right one.
-- [ ] `com.google.android.gms.ads.APPLICATION_ID` meta-data set in `AndroidManifest.xml` per flavor.
+- [ ] `com.google.android.gms.ads.APPLICATION_ID` meta-data set in `AndroidManifest.xml` per flavor (for the AppLovin → AdMob bidding adapter).
 
 ### Monitoring
 
