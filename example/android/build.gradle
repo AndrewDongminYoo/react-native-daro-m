@@ -12,12 +12,11 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        // DaroM SDK is hosted on the Kakao Nexus repo; the so.daro.m Gradle
-        // plugin (applied in app/build.gradle) lives there as well.
+        // DaroM Gradle plugin (so.daro:daro-plugin) is hosted on the Kakao
+        // Nexus repo. Runtime mediation network repos live in the
+        // allprojects { repositories { ... } } block below — buildscript only
+        // needs the plugin coordinates.
         maven { url "https://devrepo.kakao.com/nexus/content/groups/public/" }
-        // AppLovin MAX adapters bundled by the DaroM SDK pull artifacts from
-        // AppLovin's own repo at runtime resolution.
-        maven { url = uri("https://artifacts.applovin.com/android") }
     }
     dependencies {
         classpath("com.android.tools.build:gradle")
@@ -29,12 +28,26 @@ buildscript {
     }
 }
 
+// DaroM SDK pulls AppLovin MAX adapters that each require their own
+// network-specific Maven repo. AppLovin's own repo (artifacts.applovin.com)
+// returns HTTP 403 for non-AppLovin artifacts, so it MUST come last —
+// otherwise Gradle hits the 403 before trying the real network repo.
+// Order matches youngkeul-rn-app/android/settings.gradle (which moves the
+// AppLovin repo to the end with a comment explicitly noting the reason).
 allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://devrepo.kakao.com/nexus/content/groups/public/" }
-        maven { url = uri("https://artifacts.applovin.com/android") }
+        maven { url "https://devrepo.kakao.com/nexus/content/groups/public/" }   // DaroM SDK
+        maven { url "https://android-sdk.is.com" }                                // IronSource
+        maven { url "https://artifact.bytedance.com/repository/pangle" }          // Pangle (ByteDance)
+        maven { url "https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea" }  // Mintegral
+        maven { url "https://maven.ogury.co" }                                    // Ogury
+        maven { url "https://s3.amazonaws.com/smaato-sdk-releases/" }             // Smaato
+        maven { url "https://verve.jfrog.io/artifactory/verve-gradle-release" }   // Verve / HyBid
+        maven { url "https://cboost.jfrog.io/artifactory/chartboost-ads" }        // Chartboost ads
+        maven { url "https://cboost.jfrog.io/artifactory/chartboost-mediation" }  // Chartboost mediation
+        maven { url = uri("https://artifacts.applovin.com/android") }             // AppLovin — MUST stay last
     }
 }
 
