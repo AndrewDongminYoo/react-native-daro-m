@@ -172,6 +172,26 @@ when `null` or `false`, preventing a flash of nothing on re-mounts.
 `StyleSheet` references. The cast is replaced with `StyleSheet.flatten(style) ?? {}`, which
 correctly resolves all React Native style variants before accessing individual properties.
 
+### `NativeEventEmitter` constructed without the legacy module argument
+
+`src/EventEmitter.ts` previously called `new NativeEventEmitter(NativeModules.DaroMModule)`.
+Under Bridgeless / New Architecture, passing a non-null module argument makes React Native
+probe for `addListener` / `removeListeners` methods on the JS module surface. The native
+`RCTEventEmitter` superclass provides those, but they are not surfaced through the New
+Architecture interop layer — so every listener registration emits two DEV-mode warnings:
+
+```log
+new NativeEventEmitter() was called with a non-null argument without the required
+addListener method.
+new NativeEventEmitter() was called with a non-null argument without the required
+removeListeners method.
+```
+
+The native side does not gate event emission on JS listener count for this module, so
+dropping the argument is behaviorally equivalent. The fork now calls
+`new NativeEventEmitter()` with no arguments, silencing the warnings under New Architecture
+without changing event flow under legacy.
+
 ---
 
 ## Native Bug Fixes (iOS)
