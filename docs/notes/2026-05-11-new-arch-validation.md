@@ -93,7 +93,93 @@ The full run logs include repeated:
   in `info.plist` file of the app. Please add the required item and try again.
 ```
 
-Not blocking in development, but the host app must add the full `SKAdNetworkItems` array (published by AppLovin) to `Info.plist` before App Store submission — otherwise iOS attribution drops and revenue from those networks is lost. AppLovin's list is the canonical source: <https://monetization-support.applovin.com/hc/en-us/articles/4404486141581>.
+This warning comes from HyBid, one of the mediation adapters bundled into AppLovin MAX (originally PubNative/Verve). There are two distinct Info.plist keys at play:
+
+| Key                    | Defined by       | Who reads it                        |
+| ---------------------- | ---------------- | ----------------------------------- |
+| `SKAdNetworkItems`     | Apple standard   | iOS system + all mainstream ad SDKs |
+| `AdNetworkIdentifiers` | HyBid convention | Only HyBid                          |
+
+Same SKAdNetwork ID list, two different keys. For production, the host app should:
+
+1. Add the full `SKAdNetworkItems` array (Apple standard) to `Info.plist`. AppLovin maintains the canonical list across all adapters: <https://monetization-support.applovin.com/hc/en-us/articles/4404486141581>.
+2. Optionally mirror the same list under `AdNetworkIdentifiers` if HyBid traffic is a material share of revenue. The warning is otherwise non-blocking — Interstitial impressions in this session were recorded normally without either key.
+
+The warning fires on every load request and is harmless in development. Do not silence it via Xcode log filters — it will be a useful breadcrumb when SKAdNetwork attribution is finally wired up.
+
+## End-to-end success milestone (11:08–11:10)
+
+The 11:08 run produced the first fully clean fullscreen flow:
+
+```log
+11:08:02  ✅ Banner: loaded               (pre-load on SDK ready)
+11:08:03  ✅ Interstitial: loaded         (pre-load — refactored pattern)
+11:08:05  ✅ Rewarded: loaded             (pre-load)
+... user taps Interstitial ...
+11:09:19  ✅ Interstitial: showAd() resolved   (Promise<void> resolves on success too)
+11:09:19  ✅ Interstitial Ad impression / displayed
+... 57-second ad view ...
+11:10:16  ✅ Interstitial: hidden — reloading  (onAdHidden auto-reloads next ad)
+11:10:16  ✅ Interstitial: loaded               (re-load: 1.8s — likely cached bid)
+```
+
+This is the canonical happy path for a fork patch + ADR-005 + App.tsx refactor combined:
+
+- **ADR-005 Decision 1**: legacy bridge runs on TurboModule interop, no rewrite needed.
+- **Fork patch #1 (Promise<void>)**: both success (`resolved`) and failure (`rejected: Interstitial ad not loaded`) paths are now observable from JS.
+- **Refactored event-driven pattern**: pre-load on SDK ready → button checks ready flag → onAdHidden triggers next loadAd. Worked unattended.
+- **Re-load latency 1.8s**: AppLovin caches the next bid eagerly, so consecutive shows are fast.
+
+This is the behavior the host app should expect after migration.
+
+## Rewarded callback flow — the bug class that motivated this fork
+
+The 11:15–11:16 run is the one that matters most. Rewarded ads with server-side reward verification are the exact failure mode that pushed the host app to fork in the first place.
+
+```log
+11:15:13.941  rewarded Ad show ... customData : smoke-test-payload   ← param passed through
+11:15:13.941  Rewarded: showAd() resolved                            ← Promise<void> resolves
+11:15:14.499  rewarded Ad impression
+11:15:14.509  rewarded Ad onShown
+11:15:17.513  rewarded Ad ad Clicked
+11:16:20.651  rewarded Ad rewarded user with 0                       ← reward fires natively
+11:16:20.651  Rewarded: reward {"adUnitId":"e15...","rewardAmount":0,"rewardLabel":""}
+11:16:21.177  rewarded Ad onDismiss
+11:16:21.177  Rewarded: hidden — reloading
+11:16:21.216  ✅ rewarded 광고 로드 성공                              (auto-reload: 39ms)
+```
+
+Concretely validated:
+
+| Concern                                                                                                                                                  | Evidence                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `customData` survives the JS→native→AppLovin→ad-network→callback round-trip under New Arch interop                                                       | `customData: smoke-test-payload` reaches the DaroM debug log unchanged                                                     |
+| `addAdReceivedRewardEventListener` receives the full reward payload                                                                                      | `{adUnitId, rewardAmount, rewardLabel}` arrives in JS within milliseconds of the native `rewarded user with 0` line        |
+| ADR-001 single-subscriber `EventEmitter` does not lose the reward listener despite intervening lifecycle events (show → click → click → reward → hidden) | All 6 events in the sequence reached JS in order                                                                           |
+| Refactored `onAdHidden` → next `loadAd()` keeps inventory warm                                                                                           | 39ms wall clock from `hidden` to next `loaded` (the bid was cached)                                                        |
+| `rewardAmount: 0`                                                                                                                                        | DaroM dashboard test unit has no reward configured. Production units return real values — this is not a fork/bridge defect |
+
+This is the code path the host app's reward-attribution bugs lived on. Under upstream's `void`-returning `showAd()` and the SDK's silent listener overwrites, a remount between `show()` and `reward` event would have:
+
+- swallowed the `showAd` rejection silently if anything went wrong
+- silently overwritten the reward listener with a new mount's listener, sending the reward to a stale closure (or nowhere)
+
+Both failure modes are now blocked by fork patches #1 (Promise<void>) and #2 (DEV-time single-listener warning). The host app should expect reward attribution to work after migration.
+
+### Open observation: `No incoming parser found for method: handleCallback`
+
+The rewarded flow surfaced this once, logged as FATAL by a mediation adapter's `ErrorLogger`:
+
+```log
+📋 LOG ENTRY
+System: ErrorLogger
+Level: 🛑 FATAL
+Description: No incoming parser found for method: handleCallback
+```
+
+Despite the `FATAL` label, the rewarded ad continued through impression → click → reward → dismiss without missing any callback. The `FATAL` is the adapter's own severity tag, not an actual process-fatal event. Likely cause: a mediation adapter (Unity Ads / Vungle / IronSource — order of likelihood) tried to dispatch through a callback parser the host has not registered. Common when `LSApplicationQueriesSchemes` or similar URL-scheme allowlists are missing from `Info.plist`.
+
+Action: not blocking; recorded so that if Sentry/Crashlytics surfaces this in production volume after the host app migrates, the symptom is already mapped to a known cause.
 
 ## Flavor migration impact
 
