@@ -51,12 +51,26 @@ const UNITS = {
 
 type LogLine = { ts: number; tag: string; msg: string };
 
+// Fullscreen ad lifecycle is event-driven and asymmetric:
+//   loadAd()  → eventually fires onAdLoaded (or onAdLoadFailed)
+//   showAd()  → must be called only after onAdLoaded
+//   onAdHidden→ caller is responsible for triggering the *next* loadAd()
+// Calling showAd() before onAdLoaded surfaces as a `Promise<void>` rejection
+// "Error: Interstitial ad not loaded" — which is exactly the kind of silent
+// failure the fork's Promise<void> patch is designed to make observable.
+// The host app should use the pattern below rather than naively chaining
+// load-then-show inside a single button handler.
+
 export default function App() {
   const [log, setLog] = useState<LogLine[]>([]);
   const [ready, setReady] = useState(false);
+  const [interstitialReady, setInterstitialReady] = useState(false);
+  const [rewardedReady, setRewardedReady] = useState(false);
+  const [lightPopupReady, setLightPopupReady] = useState(false);
 
   const append = useCallback((tag: string, msg: string) => {
     setLog((prev) => [{ ts: Date.now(), tag, msg }, ...prev].slice(0, 50));
+    console.debug(`[🎆] ${tag}: ${msg}`);
   }, []);
 
   useEffect(() => {
@@ -69,33 +83,46 @@ export default function App() {
       })
       .catch((err) => append('SDK', `initialize failed: ${String(err)}`));
 
-    InterstitialAd.addAdLoadedEventListener((info) =>
-      append('Interstitial', `loaded ${JSON.stringify(info)}`)
-    );
-    InterstitialAd.addAdLoadFailedEventListener((info) =>
-      append('Interstitial', `load failed ${JSON.stringify(info)}`)
-    );
-    InterstitialAd.addAdHiddenEventListener(() =>
-      append('Interstitial', 'hidden')
-    );
+    InterstitialAd.addAdLoadedEventListener((info) => {
+      setInterstitialReady(true);
+      append('Interstitial', `loaded ${JSON.stringify(info)}`);
+    });
+    InterstitialAd.addAdLoadFailedEventListener((info) => {
+      setInterstitialReady(false);
+      append('Interstitial', `load failed ${JSON.stringify(info)}`);
+    });
+    InterstitialAd.addAdHiddenEventListener(() => {
+      setInterstitialReady(false);
+      // Pre-load the next one so the user does not wait when they tap again.
+      InterstitialAd.loadAd(UNITS.interstitial!);
+      append('Interstitial', 'hidden — reloading');
+    });
 
-    RewardedAd.addAdLoadedEventListener((info) =>
-      append('Rewarded', `loaded ${JSON.stringify(info)}`)
-    );
-    RewardedAd.addAdLoadFailedEventListener((info) =>
-      append('Rewarded', `load failed ${JSON.stringify(info)}`)
-    );
+    RewardedAd.addAdLoadedEventListener((info) => {
+      setRewardedReady(true);
+      append('Rewarded', `loaded ${JSON.stringify(info)}`);
+    });
+    RewardedAd.addAdLoadFailedEventListener((info) => {
+      setRewardedReady(false);
+      append('Rewarded', `load failed ${JSON.stringify(info)}`);
+    });
     RewardedAd.addAdReceivedRewardEventListener((info) =>
       append('Rewarded', `reward ${JSON.stringify(info)}`)
     );
-    RewardedAd.addAdHiddenEventListener(() => append('Rewarded', 'hidden'));
+    RewardedAd.addAdHiddenEventListener(() => {
+      setRewardedReady(false);
+      RewardedAd.loadAd(UNITS.rewarded!);
+      append('Rewarded', 'hidden — reloading');
+    });
 
-    LightPopupAd.addAdLoadedEventListener((info) =>
-      append('LightPopup', `loaded ${JSON.stringify(info)}`)
-    );
-    LightPopupAd.addAdLoadFailedEventListener((info) =>
-      append('LightPopup', `load failed ${JSON.stringify(info)}`)
-    );
+    LightPopupAd.addAdLoadedEventListener((info) => {
+      setLightPopupReady(true);
+      append('LightPopup', `loaded ${JSON.stringify(info)}`);
+    });
+    LightPopupAd.addAdLoadFailedEventListener((info) => {
+      setLightPopupReady(false);
+      append('LightPopup', `load failed ${JSON.stringify(info)}`);
+    });
 
     return () => {
       cancelled = true;
@@ -111,9 +138,23 @@ export default function App() {
     };
   }, [append]);
 
+  // Pre-load every fullscreen format the moment the SDK reports ready. The
+  // SDK retries internally on transient failures — do not layer another
+  // retry tier on top.
+  useEffect(() => {
+    if (!ready) return;
+    InterstitialAd.loadAd(UNITS.interstitial!);
+    RewardedAd.loadAd(UNITS.rewarded!);
+    LightPopupAd.loadAd(UNITS.lightPopup!);
+    append('SDK', 'pre-loading interstitial / rewarded / lightPopup');
+  }, [ready, append]);
+
   const showInterstitial = useCallback(async () => {
+    if (!interstitialReady) {
+      append('Interstitial', 'not ready — wait for onAdLoaded then retap');
+      return;
+    }
     try {
-      InterstitialAd.loadAd(UNITS.interstitial!);
       // Demonstrates the fork's `Promise<void>` return type — the host app
       // can await display completion before navigating or running reward
       // verification. Upstream `void` would silently swallow rejections.
@@ -122,27 +163,33 @@ export default function App() {
     } catch (err) {
       append('Interstitial', `showAd rejected: ${String(err)}`);
     }
-  }, [append]);
+  }, [append, interstitialReady]);
 
   const showRewarded = useCallback(async () => {
+    if (!rewardedReady) {
+      append('Rewarded', 'not ready — wait for onAdLoaded then retap');
+      return;
+    }
     try {
-      RewardedAd.loadAd(UNITS.rewarded!);
       await RewardedAd.showAd(UNITS.rewarded!, 'smoke-test-payload');
       append('Rewarded', 'showAd() resolved');
     } catch (err) {
       append('Rewarded', `showAd rejected: ${String(err)}`);
     }
-  }, [append]);
+  }, [append, rewardedReady]);
 
   const showLightPopup = useCallback(async () => {
+    if (!lightPopupReady) {
+      append('LightPopup', 'not ready — wait for onAdLoaded then retap');
+      return;
+    }
     try {
-      LightPopupAd.loadAd(UNITS.lightPopup!);
       await LightPopupAd.showAd(UNITS.lightPopup!);
       append('LightPopup', 'showAd() resolved');
     } catch (err) {
       append('LightPopup', `showAd rejected: ${String(err)}`);
     }
-  }, [append]);
+  }, [append, lightPopupReady]);
 
   return (
     <SafeAreaView style={styles.root}>
@@ -153,15 +200,27 @@ export default function App() {
 
       <View style={styles.section}>
         <Text style={styles.h2}>Banner</Text>
-        <AdBannerView
-          adUnitId={UNITS.banner!}
-          adFormat={AdFormat.BANNER}
-          style={styles.banner}
-          onAdLoaded={(info) => append('Banner', `loaded ${info.adUnitId}`)}
-          onAdLoadFailed={(info) =>
-            append('Banner', `load failed ${JSON.stringify(info)}`)
-          }
-        />
+        {/*
+          Gate the native ad view on `ready` so we never mount AdBannerView
+          before initialize() resolves. The fork's defensive isInitialized()
+          check inside AdBannerView falls back to an empty <View>, but that
+          path also emits the "AdBannerView is mounted before the
+          initialization of the DaroM React Native module" warning — which
+          masks real issues when scanning the runtime log.
+        */}
+        {ready ? (
+          <AdBannerView
+            adUnitId={UNITS.banner!}
+            adFormat={AdFormat.BANNER}
+            style={styles.banner}
+            onAdLoaded={(info) => append('Banner', `loaded ${info.adUnitId}`)}
+            onAdLoadFailed={(info) =>
+              append('Banner', `load failed ${JSON.stringify(info)}`)
+            }
+          />
+        ) : (
+          <View style={styles.banner} />
+        )}
       </View>
 
       <View style={styles.row}>
