@@ -76,12 +76,27 @@ Queue name: com.meta.react.turbomodulemanager.queue
 
 The DaroM SDK internally calls `UIApplication.applicationState` from whichever queue invokes it. Under the legacy bridge, each native module ran on its own private serial queue — still not main, but the warning either fired silently or never fired because the SDK happened to dispatch internally before reaching UIKit. Under the New Architecture interop, all modules share the single TurboModule queue, and the violation surfaces consistently.
 
-The underlying bug is in the closed-source DaroM SDK, not in this fork. Two response options exist:
+The underlying bug is in the closed-source DaroM SDK, not in this fork.
 
-- **Workaround (5th fork patch)**: override `methodQueue` on `DaroMModule` to return `dispatch_get_main_queue()`, forcing every method onto the main thread. Eliminates the Main Thread Checker noise but serializes all SDK calls through the main thread, with potential UI-jank tradeoffs.
-- **Wait on upstream**: report to DaroM, leave the warning in place. Not a crash.
+**Decision (resolved 2026-05-11)**: Adopt a _targeted_ main-dispatch patch rather than a blanket `methodQueue` override.
 
-This ADR does not yet pick between those. It is recorded here so the next person to look at the warning knows it is a known consequence of interop, not a new regression.
+Inspection of the stack trace narrowed the violation to `DaroAds.shared.initialized`, which uses `dispatch_once` to lazily call `UIApplication.applicationState`. `dispatch_once` captures the calling thread for the once-block's execution, so the fix is to ensure the _first_ call from this bridge lands on main:
+
+```swift
+DispatchQueue.main.async {
+    DaroAds.shared.initialized { error in ... }
+}
+```
+
+Applied to `initializeSdk` and `showMediationDebugger` in `ios/DaroMModule.swift`. The other show\* methods (Interstitial / Rewarded / AppOpen / LightPopup) already had matching main-dispatch from earlier fork patches — see `docs/fork-differences.md → Native Bug Fixes (iOS)`.
+
+Why targeted instead of `methodQueue` override:
+
+- A blanket override forces _every_ method (including frequent ones like `isXxxReady`, `loadXxx`) to serialize through main, with UI-jank risk if the SDK ever exposes a slow synchronous call.
+- The bug is narrowly inside `dispatch_once` of one specific SDK entry point. The other methods are not known to trigger Main Thread Checker, and their existing main-dispatches cover the obvious UIKit cases.
+- The patch is now an idiomatic continuation of the existing codebase pattern, not a structural change.
+
+If Main Thread Checker fires on additional methods in production traffic, extend selectively per call site — do not revisit the `methodQueue` blanket option without new evidence.
 
 ### 3. License key resolution is bundle-membership-sensitive
 

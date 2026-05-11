@@ -19,7 +19,8 @@ This repository is a **maintenance fork** of the public npm package [`react-nati
 1. `InterstitialAd.showAd`, `RewardedAd.showAd`, `AppOpenAd.showAd`, `LightPopupAd.showAd` return `Promise<void>` — the host app `await`s them to sync reward verification and navigation.
 2. `EventEmitter.addEventListener` emits a `__DEV__`-gated `console.warn` when an existing listener for the same event is being replaced (the bridge supports only one listener per event type; silent overwrites were how reward events were getting lost).
 3. `setUserId` parameter type corrected from `String` to `string`.
-4. Package name scoped to `@dev-teamremited/react-native-daro-m`. The CocoaPods spec name stays `react-native-daro-m` for autolinking compatibility.
+4. `initializeSdk` and `showMediationDebugger` (iOS) wrapped in `DispatchQueue.main.async` so the DaroM SDK's internal `dispatch_once` + `UIApplication.applicationState` access captures the main thread — silences Main Thread Checker under New Architecture interop without overriding `methodQueue` globally. See ADR-005 §2 / Validation.
+5. Package name scoped to `@dev-teamremited/react-native-daro-m`. The CocoaPods spec name stays `react-native-daro-m` for autolinking compatibility.
 
 Everything else versus upstream is Prettier-driven formatting (single quotes, 2-space indent, 80-col wrap) and should not be treated as load-bearing.
 

@@ -54,7 +54,11 @@ The bridge supports only one listener per event type. Upstream silently overwrit
 
 Upstream typed the parameter as the boxed wrapper type `String`. Corrected to the primitive `string`.
 
-### 4. Package identity
+### 4. Native: `DispatchQueue.main.async` around SDK entry points
+
+`DaroAds.shared.initialized` (iOS) calls `UIApplication.applicationState` inside a `dispatch_once` block. Under New Architecture's TurboModule interop, all native modules execute on the shared `com.meta.react.turbomodulemanager.queue` (not main thread), so Main Thread Checker flags the access on every cold start. The fork wraps `initializeSdk` and `showMediationDebugger` in `DispatchQueue.main.async` so the once-block captures main as its execution thread. See [ADR-005 §2 / Validation](./docs/adr/005-defer-turbomodule-migration.md) for the trade-off analysis.
+
+### 5. Package identity
 
 | Field                             | Upstream                 | This fork                                         |
 | --------------------------------- | ------------------------ | ------------------------------------------------- |
