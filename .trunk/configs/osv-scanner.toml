@@ -36,3 +36,7 @@ reason = "tmp 0.0.33 symlink arbitrary write advisory accepted temporarily."
 [[IgnoredVulns]]
 id = "GHSA-2p57-rm9w-gvfp"
 reason = "ip 1.1.9 SSRF classification advisory accepted temporarily."
+
+[[IgnoredVulns]]
+id = "GHSA-gh4j-gqv2-49f6"
+reason = "'fast-xml-parser' XMLBuilder: XML Comment and CDATA Injection via Unescaped Delimiters."
