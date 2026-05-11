@@ -120,3 +120,35 @@ The example in `src/App.tsx` implements the recommended pattern:
 5. Have the button handler check the ready flag and surface a "not ready" message if the user taps too early.
 
 Do **not** layer additional retry logic on top of `loadAd()`. The DaroM/AppLovin SDK retries internally with exponential backoff (~1s, 2s, 3s, 5s, 8s — see [`docs/notes/2026-05-11-new-arch-validation.md`](../docs/notes/2026-05-11-new-arch-validation.md)). Adding another tier doubles the request rate and exhausts ad inventory.
+
+## Pre-production checklist
+
+Before shipping the host app with this fork:
+
+### iOS
+
+- [ ] Add the full `SKAdNetworkItems` array to `Info.plist`. AppLovin publishes the canonical list of advertiser SKAdNetwork IDs covering every mediation adapter bundled with DaroM: <https://monetization-support.applovin.com/hc/en-us/articles/4404486141581>. Without this, iOS attribution drops for SKAdNetwork-only inventory and revenue is lost.
+- [ ] Optionally mirror the same list under `AdNetworkIdentifiers` if HyBid is a material share of revenue (only HyBid reads this key; non-HyBid traffic does not need it).
+- [ ] Per-flavor `ios-daro-key.txt` provisioned and bundled — see [Build flavors](#build-flavors) above.
+- [ ] `NSUserTrackingUsageDescription` string in `Info.plist` and ATT prompt wired up where appropriate (App Tracking Transparency) — otherwise IDFA is unavailable and bid prices drop.
+- [ ] `GADApplicationIdentifier` (AdMob bidding) populated per flavor.
+
+### Android
+
+- [ ] Per-flavor `android-daro-key.txt` placed under `app/src/<flavor>/assets/` so Gradle merges the right one.
+- [ ] `com.google.android.gms.ads.APPLICATION_ID` meta-data set in `AndroidManifest.xml` per flavor.
+
+### Monitoring
+
+- [ ] Watch for `[ErrorLogger] FATAL: No incoming parser found for method: handleCallback` in production crash/log dashboards. The 2026-05-11 validation run hit this once during a successful rewarded flow; it does not block ad delivery but may indicate a missing URL-scheme allowlist (`LSApplicationQueriesSchemes`) in `Info.plist`. Investigate only if it appears at non-trivial volume.
+
+## Known limitations of this example
+
+- **LightPopup ad unit ID is a placeholder.** The DaroM dashboard test account used while authoring this example did not have a LightPopup unit provisioned, so `src/App.tsx` uses `YOUR_*_LIGHT_POPUP_UNIT` strings. `LightPopup: load failed {"message":"No ad unit found"}` in the in-app log on first run is expected; replace with real values to validate.
+- **Main Thread Checker warnings appear in Xcode console.** As of fork patch #4 (`initializeSdk` / `showMediationDebugger` main-dispatch — see [`README.md → Differences from upstream`](../README.md)), the warning is silenced for the SDK initialization path. If additional warnings appear during your runs, they indicate other DaroM SDK methods we have not yet wrapped; capture the stack trace and file an issue.
+
+## Companion documents
+
+- [`../README.md → Differences from upstream`](../README.md) — full fork patch list
+- [`../docs/adr/005-defer-turbomodule-migration.md`](../docs/adr/005-defer-turbomodule-migration.md) — why we keep the legacy bridge under New Architecture
+- [`../docs/notes/2026-05-11-new-arch-validation.md`](../docs/notes/2026-05-11-new-arch-validation.md) — field notes from the validation session that produced this example
