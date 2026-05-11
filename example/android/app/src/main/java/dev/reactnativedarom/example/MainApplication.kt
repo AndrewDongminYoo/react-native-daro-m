@@ -1,4 +1,4 @@
-package devteamremited.reactnativedarom.example
+package dev.reactnativedarom.example
 
 import android.app.Application
 import com.facebook.react.PackageList

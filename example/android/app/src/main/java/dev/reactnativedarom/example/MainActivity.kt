@@ -1,4 +1,4 @@
-package devteamremited.reactnativedarom.example
+package dev.reactnativedarom.example
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
