@@ -12,11 +12,29 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        // DaroM SDK is hosted on the Kakao Nexus repo; the so.daro.m Gradle
+        // plugin (applied in app/build.gradle) lives there as well.
+        maven { url "https://devrepo.kakao.com/nexus/content/groups/public/" }
+        // AppLovin MAX adapters bundled by the DaroM SDK pull artifacts from
+        // AppLovin's own repo at runtime resolution.
+        maven { url = uri("https://artifacts.applovin.com/android") }
     }
     dependencies {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        // DaroM Gradle plugin — host-app integration responsibility per the
+        // DaroM SDK's distribution model. See example/README.md → Android.
+        classpath("so.daro:daro-plugin:1.0.12")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://devrepo.kakao.com/nexus/content/groups/public/" }
+        maven { url = uri("https://artifacts.applovin.com/android") }
     }
 }
 
