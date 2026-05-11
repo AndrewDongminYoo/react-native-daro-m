@@ -46,7 +46,7 @@ extension DaroMModule {
                 return
             }
             // Fix: RN rootViewController may report safeAreaInsets.top == 0 because safe area
-            // is handled in JS via react-native-safe-area-context. Set additionalSafeAreaInsets
+            // is handled in JS via react-native. Set additionalSafeAreaInsets
             // so DARO SDK (AppLovin-based) positions the close [X] button below the status bar.
             let topInset = window.safeAreaInsets.top
             if topInset > 0 {

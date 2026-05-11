@@ -7,7 +7,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   AdBannerView,
   AdFormat,
@@ -45,7 +44,7 @@ const UNITS = {
   lightPopup: Platform.select({
     ios: 'YOUR_IOS_LIGHT_POPUP_UNIT',
     android: 'YOUR_ANDROID_LIGHT_POPUP_UNIT',
-    default: 'YOUR_LIGHT_POPUP_UNIT',
+    default: '',
   }),
 };
 
