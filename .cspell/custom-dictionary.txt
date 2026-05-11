@@ -2,6 +2,7 @@
 AARRGGBB
 adunit
 ADVIEW
+androiddebugkey
 androidx
 APPOPEN
 ARGB
@@ -9,11 +10,13 @@ armeabi
 Autoresizing
 buildscript
 Buildscript
+Codegen
 daro
 darom
 Dongmin
 droom
 gradlew
+hermesc
 interstitials
 LIGHTPOPUP
 Lovin
@@ -22,7 +25,9 @@ MREC
 ndkversion
 nonnull
 podspec
+Proguard
 QWER
+reactnativedarom
 RRGGBB
 Spannable
 stdlib
