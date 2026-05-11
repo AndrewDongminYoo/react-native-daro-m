@@ -98,6 +98,33 @@ Scoping `jsRootDir` to this library's own `src/` makes codegen's scan find nothi
 
 This bug also exists in upstream (same `apply plugin: "com.facebook.react"` without scoping). Any consumer enabling New Arch with a codegen-using sibling library (safe-area-context, screens, masked-view, etc.) would hit it. Worth reporting upstream once a stable channel exists.
 
+## Android runtime: host-app SDK integration is non-optional
+
+A second Android failure surfaced after the codegen fix:
+
+```log
+java.lang.NoClassDefFoundError: Failed resolution of:
+  Ldroom/daro/view/DaroAdViewListener;
+    at com.darom.DaroMPackage.createViewManagers(DaroMPackage.kt:14)
+```
+
+Not a fork or example regression — this is the DaroM SDK's distribution model. `android/build.gradle` declares the SDK as `compileOnly "so.daro:daro-m:1.3.4"` (matching upstream), so the library compiles against the SDK types but **the host app is responsible for declaring the SDK as a runtime dependency**. iOS gets it transitively via the podspec's `s.dependency "DaroMAds"`; Android does not.
+
+The host-app integration that `youngkeul-rn-app` already does and that the example was missing:
+
+| Layer                                                                              | Required entry                                                                             |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `android/build.gradle` → `buildscript.repositories` AND `allprojects.repositories` | `maven { url = uri("https://artifacts.applovin.com/android") }`                            |
+| `android/build.gradle` → `buildscript.repositories` AND `allprojects.repositories` | `maven { url "https://devrepo.kakao.com/nexus/content/groups/public/" }`                   |
+| `android/build.gradle` → `buildscript.dependencies`                                | `classpath("so.daro:daro-plugin:1.0.12")`                                                  |
+| `android/build.gradle` → `buildscript.ext`                                         | `daroAppKey = "<dashboard UUID>"` (the `so.daro.m` Gradle plugin reads this at apply time) |
+| `android/app/build.gradle` → top-of-file `apply plugin`                            | `apply plugin: "so.daro.m"`                                                                |
+| `android/app/build.gradle` → `dependencies`                                        | `implementation("so.daro:daro-m:1.3.4")`                                                   |
+
+The `so.daro.m` plugin appears to handle AAR-level integration (resource merger config, manifest placeholders) similarly to how `google-services` operates. Without applying the plugin, runtime SDK initialization fails.
+
+These are _host-app integration steps_, not fork patches. The library's `compileOnly` declaration is intentional and correct — switching it to `implementation`/`api` would create double-resolution conflicts when the host app also declares the SDK (which it must, to apply the plugin). Documented in `example/README.md → Pre-production checklist → Android` for direct copy by any consumer.
+
 ## Promise<void> patch validated by dogfooding
 
 A later run of the example (after the bundle-ID fix landed and banner loads succeeded) reproduced the original motivation for fork patch #1 live:
