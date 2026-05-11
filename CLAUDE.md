@@ -6,7 +6,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a React Native **native bridge library module** (not an app) that wraps the DaroM advertising SDK. It exposes TypeScript APIs for Banner, Interstitial, Rewarded, AppOpen, LightPopup, and Native ad formats.
 
-Built with [react-native-builder-bob](https://github.com/callstack/react-native-builder-bob), published to npm. Build output goes to `lib/` (gitignored); source is in `src/`.
+Built with [react-native-builder-bob](https://github.com/callstack/react-native-builder-bob), published to **GitHub Packages** under the `@dongminyu` scope. Build output goes to `lib/` (gitignored); source is in `src/`.
+
+## Fork Context
+
+This repository is a **maintenance fork** of the public npm package [`react-native-daro-m`](https://www.npmjs.com/package/react-native-daro-m), consumed by the the host reward app at `../host-rn-app`. The fork exists because of reward-attribution bugs that the upstream `void`-returning ad APIs made impossible to recover from.
+
+**Source code provenance**: upstream's GitHub repo (`delightroom/daro-m-react-native`) is not publicly accessible — only the compiled tarball is on npm. `src/`, `android/`, and `ios/` were therefore extracted from `node_modules/react-native-daro-m` and re-formatted. See `README.md` for the full background.
+
+**Functional patches that distinguish this fork from upstream** (do not regress these when syncing):
+
+1. `InterstitialAd.showAd`, `RewardedAd.showAd`, `AppOpenAd.showAd`, `LightPopupAd.showAd` return `Promise<void>` — the host app `await`s them to sync reward verification and navigation.
+2. `EventEmitter.addEventListener` emits a `__DEV__`-gated `console.warn` when an existing listener for the same event is being replaced (the bridge supports only one listener per event type; silent overwrites were how reward events were getting lost).
+3. `setUserId` parameter type corrected from `String` to `string`.
+4. Package name scoped to `@dongminyu/react-native-daro-m`. The CocoaPods spec name stays `react-native-daro-m` for autolinking compatibility.
+
+Everything else versus upstream is Prettier-driven formatting (single quotes, 2-space indent, 80-col wrap) and should not be treated as load-bearing.
 
 ## Commands
 
@@ -96,7 +111,27 @@ Entry point: `src/index.tsx`. Only runtime dependency: `tinycolor2`.
 
 ## Tooling
 
-- **Package manager**: Yarn v3 (Berry) — use `yarn`, not `npm`
+- **Package manager**: Yarn v4 (Berry) — use `yarn`, not `npm`
 - **Linting**: Trunk orchestrates ESLint + Prettier + KtLint; pre-commit and pre-push hooks are active
 - **TypeScript**: strict mode enabled in `tsconfig.json`
 - **Releases**: `release-it` with `@release-it/conventional-changelog` (Angular preset); tags as `v{version}`
+- **CI** (`.github/workflows/`): `ci.yml` runs lint + typecheck + test + `yarn npm audit`; `publish.yml` pushes to GitHub Packages on `v*.*.*` tags; `release.yml` builds the library + native Android/iOS on GitHub Release `published`; `upstream-watch.yml` polls npm for new upstream versions
+
+## Upstream Tracking
+
+`.upstream-version` (single-line file at the repo root) records the upstream npm version this fork is currently synced against. `.github/workflows/upstream-watch.yml` runs daily and on `workflow_dispatch`:
+
+1. Reads `.upstream-version`.
+2. Runs `npm view react-native-daro-m version`.
+3. If they differ, opens a tracking issue labeled `upstream-sync` with a checklist for diffing the new tarball, re-applying the fork's functional patches, and bumping `.upstream-version`.
+
+The `upstream-sync` label must exist on the GitHub repo for issue creation to succeed. To sync manually:
+
+```sh
+npm pack react-native-daro-m@<new-version>
+tar -xzf react-native-daro-m-<new-version>.tgz -C /tmp/upstream
+diff -wru src/ /tmp/upstream/package/src/   # ignore whitespace; surface functional drift
+# re-apply the four fork patches listed in "Fork Context" if needed
+echo "<new-version>" > .upstream-version
+yarn typecheck && yarn lint && yarn test && yarn prepare
+```
