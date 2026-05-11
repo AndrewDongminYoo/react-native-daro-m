@@ -284,6 +284,31 @@ Despite the `FATAL` label, the rewarded ad continued through impression → clic
 
 Action: not blocking; recorded so that if Sentry/Crashlytics surfaces this in production volume after the host app migrates, the symptom is already mapped to a known cause.
 
-## Flavor migration impact
+## Android end-to-end success milestone
+
+After the codegen scoping fix (patch added to `android/build.gradle`), the host-app SDK integration (DaroM Gradle plugin + runtime dep + mediation network repos in `example/android/`), and a one-time CMake retry, the example app reached parity with iOS on Android:
+
+```log
+[🎆] SDK: initialize() resolved
+[🎆] Interstitial: loaded (3552ms)
+[🎆] Rewarded: loaded    (6249ms)
+[🎆] Banner: loaded                                             ← auto-refresh keeps firing
+[🎆] Interstitial: showAd() resolved → hidden — reloading → loaded (2805ms)
+[🎆] Rewarded: showAd() resolved → reward {…} → hidden — reloading → loaded (2377ms)
+[🎆] LightPopup: not ready                                      ← placeholder unit, expected
+```
+
+Reward payload round-trips with the `customData` parameter on Android exactly as on iOS. ADR-005 (interop-layer reliance) and fork patches #1 (Promise<void>) + #2 (single-listener EventEmitter) are now validated on both platforms.
+
+### Dev-only warnings observed (non-blocking)
+
+1. **`SafeAreaView has been deprecated`** — emitted by RN itself; `example/src/App.tsx` imports `SafeAreaView` from `react-native` after the `react-native-safe-area-context` dep was removed earlier as a workaround for the dex merge conflict. Now that the codegen scoping patch is in, the dep can be restored: `cd example && yarn add react-native-safe-area-context` and reinstate the `SafeAreaProvider` wrapper in `index.js`. Not a fork concern.
+
+2. **`new NativeEventEmitter() ... without required addListener / removeListeners methods`** — fired twice on first listener registration. `src/EventEmitter.ts` constructs `new NativeEventEmitter(NativeModules.DaroMModule)` (the legacy pattern). Under Bridgeless / New Arch, RN's `NativeEventEmitter` expects `addListener` and `removeListeners` to be exposed on the JS module object even though the native `RCTEventEmitter` superclass already implements them. Events still flow normally — verified by the reward callback and the in-app log — so this is cosmetic. Possible fork-side fixes:
+   - Drop the argument: `new NativeEventEmitter()` (RN-recommended for newer modules; some RN versions then lose the native-side listener count, which our single-subscriber model does not rely on but is worth verifying)
+   - Add JS-side shims to `NativeModules.DaroMModule` to silence the warning without behavior change
+   - Leave as-is — production builds do not emit it
+
+   Carrying as an open question to a future ADR / fork-patch decision, similar in shape to the resolved `methodQueue` question from ADR-005 §2.
 
 The host app (`host-rn-app`) plans `development` / `staging` / `production` flavors with distinct bundle IDs and distinct DaroM dashboard apps. Each flavor needs its **own** identity 3-tuple. See [example/README.md → Build flavors](../../example/README.md) for the two viable patterns (multi-target vs per-configuration Run Script). The Run Script approach is the lower-friction choice for a single Xcode target.
