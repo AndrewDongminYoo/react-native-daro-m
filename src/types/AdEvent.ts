@@ -1,12 +1,12 @@
-import type {
-  AdInfo,
-  AdLoadFailedInfo,
-  AdDisplayFailedInfo,
-  AdRewardInfo,
+import {
+  type AdInfo,
+  type AdLoadFailedInfo,
+  type AdDisplayFailedInfo,
+  type AdRewardInfo,
 } from './AdInfo';
 
 export type AdEventObject =
-  | AdInfo
+  | AdInfo // { adUnitId, latencyMillis }
   | AdLoadFailedInfo
   | AdDisplayFailedInfo
   | AdRewardInfo;

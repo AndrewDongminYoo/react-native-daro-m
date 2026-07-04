@@ -7,6 +7,7 @@ import type {
   TextStyle,
   ImageStyle,
   ViewProps,
+  ImageResizeMode,
 } from 'react-native';
 import {
   findNodeHandle,
@@ -82,7 +83,7 @@ const useStyleProps = (style: StyleProp<TextStyle>): StyleProps => {
 
       // 3. 정렬
       textAlign: styleObj.textAlign as
-        | 'auto'
+        | 'auto' // auto-align
         | 'left'
         | 'right'
         | 'center'
@@ -174,12 +175,7 @@ const useImageStyleProps = (style: StyleProp<ImageStyle>): ImageStyleProps => {
       height: styleObj.height as number,
 
       // Image 전용 스타일 속성
-      resizeMode: styleObj.resizeMode as
-        | 'cover'
-        | 'contain'
-        | 'stretch'
-        | 'repeat'
-        | 'center',
+      resizeMode: styleObj.resizeMode as ImageResizeMode,
       tintColor: styleObj.tintColor as string,
       overlayColor: styleObj.overlayColor as string,
       aspectRatio: styleObj.aspectRatio as number,

@@ -24,7 +24,7 @@ type NativeEventEmitterModule = {
   removeListeners: (count: number) => void;
 };
 const DaroMModule = NativeModules.DaroMModule as
-  | (Partial<NativeEventEmitterModule> & Record<string, unknown>)
+  | (Partial<NativeEventEmitterModule> & Record<string, unknown>) // no-format
   | undefined;
 if (DaroMModule) {
   if (typeof DaroMModule.addListener !== 'function') {
