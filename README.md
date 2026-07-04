@@ -4,7 +4,7 @@ A maintenance fork of [`react-native-daro-m`](https://www.npmjs.com/package/reac
 
 ## Why this fork exists
 
-This package is consumed by the **the host reward app** at [`/Users/dongminyu/Development/02_work/host-rn-app`](../host-rn-app). The production app was hitting reward-attribution bugs that the upstream `void`-returning ad APIs made impossible to diagnose or recover from:
+This package is consumed by a production reward app. That app was hitting reward-attribution bugs that the upstream `void`-returning ad APIs made impossible to diagnose or recover from:
 
 - Reward callbacks were occasionally lost when the host screen re-mounted between `loadAd` and the reward event.
 - `showAd(...)` returned `void`, so the host could not `await` display completion before navigating, dismissing the screen, or initiating reward verification.

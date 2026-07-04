@@ -5,7 +5,7 @@
 
 ## Context
 
-The host application that consumes this fork — the the host reward app at `../host-rn-app` — is preparing to enable React Native's New Architecture (`newArchEnabled=true`). This raised the question of whether this package must be rewritten against the TurboModule and Fabric specs before that transition can land.
+The host application that consumes this fork — a production reward app — is preparing to enable React Native's New Architecture (`newArchEnabled=true`). This raised the question of whether this package must be rewritten against the TurboModule and Fabric specs before that transition can land.
 
 The package currently uses two distinct native-integration mechanisms:
 
