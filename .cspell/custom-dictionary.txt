@@ -14,6 +14,7 @@ Codegen
 daro
 darom
 Dongmin
+dongminyu
 droom
 gradlew
 hermesc
@@ -33,5 +34,4 @@ Spannable
 stdlib
 Subview
 Superview
-dongminyu
 uimanager

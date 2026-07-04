@@ -6,11 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a React Native **native bridge library module** (not an app) that wraps the DaroM advertising SDK. It exposes TypeScript APIs for Banner, Interstitial, Rewarded, AppOpen, LightPopup, and Native ad formats.
 
-Built with [react-native-builder-bob](https://github.com/callstack/react-native-builder-bob), published to **GitHub Packages** under the `@dongminyu` scope. Build output goes to `lib/` (gitignored); source is in `src/`.
+Built with [react-native-builder-bob](https://github.com/callstack/react-native-builder-bob), published to **GitHub Packages** under the `dongminyu` scope. Build output goes to `lib/` (gitignored); source is in `src/`.
 
 ## Fork Context
-
-This repository is a **maintenance fork** of the public npm package [`react-native-daro-m`](https://www.npmjs.com/package/react-native-daro-m), consumed by the the host reward app at `../host-rn-app`. The fork exists because of reward-attribution bugs that the upstream `void`-returning ad APIs made impossible to recover from.
 
 **Source code provenance**: upstream's GitHub repo (`delightroom/daro-m-react-native`) is not publicly accessible — only the compiled tarball is on npm. `src/`, `android/`, and `ios/` were therefore extracted from `node_modules/react-native-daro-m` and re-formatted. See `README.md` for the full background.
 

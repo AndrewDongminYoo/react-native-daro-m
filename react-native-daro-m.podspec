@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => "15.1" }
-  s.source       = { :git => "https://github.com/AndrewDongminYoo/react-native-daro-m.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/dongminyu/react-native-daro-m.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 

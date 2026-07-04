@@ -62,7 +62,7 @@ Upstream typed the parameter as the boxed wrapper type `String`. Corrected to th
 
 | Field                             | Upstream                 | This fork                                         |
 | --------------------------------- | ------------------------ | ------------------------------------------------- |
-| `name`                            | `react-native-daro-m`    | `@dongminyu/react-native-daro-m`            |
+| `name`                            | `react-native-daro-m`    | `@dongminyu/react-native-daro-m`                  |
 | Registry                          | npm public               | GitHub Packages (`npm.pkg.github.com`)            |
 | Pod name                          | `react-native-daro-m`    | `react-native-daro-m` _(unchanged — autolinking)_ |
 | Diagnostic message in `index.tsx` | references unscoped name | references scoped name                            |

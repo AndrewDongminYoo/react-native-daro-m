@@ -40,4 +40,4 @@ First release validated end-to-end against React Native's New Architecture (`fab
 
 ## [1.0.31] — baseline
 
-Inherited from upstream `react-native-daro-m@1.0.31`. The published `@dongminyu` 1.0.31 already carried this fork's breaking API changes (Promise-returning `showAd`, parameter-free `removeXxx`, expanded `AppOpenAdType.showAd`, `setUserId` primitive `string`) and non-breaking improvements (single-subscriber `EventEmitter` warning, ternary banner init state, `StyleSheet.flatten` style bridging) and the iOS/Android native bug fixes catalogued in [`docs/fork-differences.md`](./docs/fork-differences.md).
+Inherited from upstream `react-native-daro-m@1.0.31`. The published 1.0.31 already carried this fork's breaking API changes (Promise-returning `showAd`, parameter-free `removeXxx`, expanded `AppOpenAdType.showAd`, `setUserId` primitive `string`) and non-breaking improvements (single-subscriber `EventEmitter` warning, ternary banner init state, `StyleSheet.flatten` style bridging) and the iOS/Android native bug fixes catalogued in [`docs/fork-differences.md`](./docs/fork-differences.md).

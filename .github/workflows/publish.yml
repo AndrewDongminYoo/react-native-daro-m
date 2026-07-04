@@ -12,7 +12,6 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
 
 jobs:
   publish:
@@ -20,19 +19,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Enable Corepack
         run: corepack enable
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
-          registry-url: https://npm.pkg.github.com
-          scope: '@dongminyu'
           cache: yarn
-          token: ${{ env.PACKAGES_TOKEN }}
 
       - name: Install dependencies
         run: yarn install --immutable
