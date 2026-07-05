@@ -1,6 +1,6 @@
 # Ignore known vulnerabilities explicitly.
 # Keep this file temporary: prefer upgrading/removing the affected transitive deps.
-
-[[IgnoredVulns]]
-id = "GHSA-gh4j-gqv2-49f6"
-reason = "fast-xml-parser@4.5.6 XMLBuilder injection, no fix in the 4.x line (patched only at 5.7.0) as of 2026-07-05. Pulled transitively by @react-native-community/cli-* (dev-only, not in the published runtime); forcing ^5 breaks the cli's ^4.4.1 consumer. Re-evaluate when RN CLI supports fast-xml-parser 5."
+#
+# No active ignores. GHSA-gh4j-gqv2-49f6 (fast-xml-parser < 5.7.0) was resolved on
+# 2026-07-05 by bumping @react-native-community/cli* 20.1.0 -> 20.2.0, whose
+# cli-config-android/cli-platform-apple require fast-xml-parser ^5.3.6 (resolves to 5.9.3).
