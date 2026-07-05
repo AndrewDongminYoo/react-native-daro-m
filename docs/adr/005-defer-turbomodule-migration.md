@@ -51,7 +51,7 @@ Trigger conditions for revisiting this ADR:
 - **Existing fork patches stay relevant.** ADR-001's single-subscriber `EventEmitter` warning and the `showAd → Promise<void>` change in `Interstitial/Rewarded/AppOpen/LightPopup` remain meaningful under New Architecture — they address lifecycle and call-site semantics, not architecture-specific behaviors.
 - **`Promise<void>` becomes a free pre-migration.** TurboModule specs declare async methods as `Promise<T>`. The fork's existing return-type change already matches that shape, so host-app call sites will not need to be revisited if the native-module side is eventually moved to a TurboModule spec.
 - **Upstream-sync workflow stays simple.** Every upstream release continues to be a diff-and-reapply exercise against legacy APIs, not a re-translation into our own TurboModule/Fabric specs.
-- **Smoke-test burden moves to the host app.** When the host flips `newArchEnabled=true`, all six ad formats (Banner, MREC, Interstitial, Rewarded, AppOpen, LightPopup, NativeAd) must be exercised end-to-end. This responsibility is documented here so it is not forgotten when the time comes.
+- **Smoke-test burden moves to the host app.** When the host flips `newArchEnabled=true`, all seven ad formats (Banner, MREC, Interstitial, Rewarded, AppOpen, LightPopup, NativeAd) must be exercised end-to-end. This responsibility is documented here so it is not forgotten when the time comes.
 - **Partial-migration door is left open.** If only the view managers prove unstable under interop, ADR-005 explicitly authorizes migrating those alone without committing to a full TurboModule rewrite.
 
 ## Validation (2026-05-11)

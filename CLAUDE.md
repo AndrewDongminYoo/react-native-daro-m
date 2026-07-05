@@ -42,10 +42,12 @@ yarn test -- --testPathPattern="<file>" --testNamePattern="<name>"
 
 # Clean all build artifacts
 yarn clean
-
-# Release a new version
-yarn release
 ```
+
+Releases are cut with the `/release` skill (`.claude/skills/release/SKILL.md`), not a
+package script: bump the version in `package.json`, update `CHANGELOG.md`, run
+typecheck + lint + test, commit as `chore(release): 🔖 vX.Y.Z`, then push the `v{version}`
+tag on a separate branch (never straight to `main`). The `v*.*.*` tag triggers `publish.yml`.
 
 Run example app commands via the workspace:
 
@@ -82,6 +84,7 @@ App → NativeModules.DaroMModule.loadInterstitial(unitId)
 | `RewardedAd.ts`     | Programmatic rewarded API                                    |
 | `AppOpenAd.ts`      | Programmatic app-open API                                    |
 | `LightPopupAd.ts`   | Programmatic light-popup API (uses `tinycolor2`)             |
+| `ErrorCode.ts`      | `ErrorCode` enum consumed by the `AdInfo` type               |
 | `nativeAd/`         | NativeAdView component + Context provider                    |
 | `types/`            | All TypeScript interfaces and event types                    |
 
@@ -113,7 +116,7 @@ Entry point: `src/index.tsx`. Only runtime dependency: `tinycolor2`.
 - **Package manager**: Yarn v4 (Berry) — use `yarn`, not `npm`
 - **Linting**: Trunk orchestrates ESLint + Prettier + KtLint; pre-commit and pre-push hooks are active
 - **TypeScript**: strict mode enabled in `tsconfig.json`
-- **Releases**: `release-it` with `@release-it/conventional-changelog` (Angular preset); tags as `v{version}`
+- **Releases**: the `/release` skill drives a manual flow (version bump → `CHANGELOG.md` → gates → tag); pushing a `v{version}` tag triggers `publish.yml`. (`release-it` was removed in favour of the skill.)
 - **CI** (`.github/workflows/`): `ci.yml` runs lint + typecheck + test + `yarn npm audit`; `publish.yml` pushes to GitHub Packages on `v*.*.*` tags; `release.yml` builds the library + native Android/iOS on GitHub Release `published`; `upstream-watch.yml` polls npm for new upstream versions
 
 ## Upstream Tracking
