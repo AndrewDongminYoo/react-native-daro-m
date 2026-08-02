@@ -44,7 +44,12 @@ export const addEventListener = <T extends AdEventObject>(
   event: string,
   handler: AdEventListener<T>
 ): void => {
-  const subscription: EventSubscription = emitter.addListener(event, handler);
+  // NativeEventEmitter types its listener as `(...args: readonly Object[])`,
+  // which a generic `AdEventListener<T>` can't be proven to satisfy.
+  const subscription: EventSubscription = emitter.addListener(
+    event,
+    handler as Parameters<typeof emitter.addListener>[1]
+  );
   const currentSubscription = subscriptions[event];
   if (currentSubscription) {
     if (__DEV__) {

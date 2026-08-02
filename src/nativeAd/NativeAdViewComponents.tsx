@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import type {
+  HostInstance,
   ImageProps,
   StyleProp,
   TextProps,
   TextStyle,
   ImageStyle,
   ViewProps,
-  ImageResizeMode,
 } from 'react-native';
 import {
   findNodeHandle,
@@ -144,7 +144,7 @@ const useStyleProps = (style: StyleProp<TextStyle>): StyleProps => {
 
 // Image 스타일 속성을 위한 타입 정의 추가
 type ImageStyleProps = StyleProps & {
-  resizeMode?: 'cover' | 'contain' | 'stretch' | 'repeat' | 'center';
+  resizeMode?: ImageStyle['resizeMode'];
   tintColor?: string;
   overlayColor?: string;
   borderRadius?: number;
@@ -175,7 +175,7 @@ const useImageStyleProps = (style: StyleProp<ImageStyle>): ImageStyleProps => {
       height: styleObj.height as number,
 
       // Image 전용 스타일 속성
-      resizeMode: styleObj.resizeMode as ImageResizeMode,
+      resizeMode: styleObj.resizeMode,
       tintColor: styleObj.tintColor as string,
       overlayColor: styleObj.overlayColor as string,
       aspectRatio: styleObj.aspectRatio as number,
@@ -212,7 +212,7 @@ const useNativeAdViewProps = (
 // 공통 Text 컴포넌트
 const AdTextView = (props: TextProps & { nativePropKey: string }) => {
   const { nativePropKey, ...restProps } = props;
-  const textRef = useRef<Text | null>(null);
+  const textRef = useRef<HostInstance | null>(null);
   const styleProps = useStyleProps(props.style);
 
   useNativeAdViewProps(textRef, nativePropKey, styleProps);
@@ -229,7 +229,7 @@ export const BodyView = (props: TextProps) => {
 };
 
 export const CallToActionView = (props: TextProps) => {
-  const callToActionRef = useRef<Text | null>(null);
+  const callToActionRef = useRef<HostInstance | null>(null);
   const styleProps = useStyleProps(props.style);
 
   useNativeAdViewProps(callToActionRef, 'callToActionView', styleProps);
@@ -247,7 +247,7 @@ export const CallToActionView = (props: TextProps) => {
 };
 
 export const IconView = (props: Omit<ImageProps, 'source'>) => {
-  const imageRef = useRef<Image | null>(null);
+  const imageRef = useRef<HostInstance | null>(null);
   const iconViewStyleProps = useImageStyleProps(props.style);
   useNativeAdViewProps(imageRef, 'iconView', iconViewStyleProps);
 
@@ -255,7 +255,7 @@ export const IconView = (props: Omit<ImageProps, 'source'>) => {
 };
 
 export const MediaView = (props: ViewProps) => {
-  const viewRef = useRef<View | null>(null);
+  const viewRef = useRef<HostInstance | null>(null);
   useNativeAdViewProps(viewRef, 'mediaView');
 
   return <View {...props} ref={viewRef} />;

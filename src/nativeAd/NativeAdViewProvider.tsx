@@ -1,11 +1,9 @@
 import type { ReactNode } from 'react';
 import * as React from 'react';
 import { createContext, useState } from 'react';
-import type { NativeMethods } from 'react-native';
-import type { NativeAdViewProps } from '../types/NativeAdViewProps';
+import type { HostInstance } from 'react-native';
 
-export type NativeAdViewType = React.Component<NativeAdViewProps> &
-  NativeMethods;
+export type NativeAdViewType = HostInstance;
 
 export type NativeAdViewContextType = {
   nativeAdView: NativeAdViewType | null;

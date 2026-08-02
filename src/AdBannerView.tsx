@@ -12,7 +12,7 @@ import {
   requireNativeComponent,
   UIManager,
   View,
-  type NativeMethods,
+  type HostInstance,
   type ViewProps,
 } from 'react-native';
 import type {
@@ -43,7 +43,7 @@ const ComponentName = 'DaroMAdBannerView';
 const AdViewComponent = requireNativeComponent<
   AdBannerViewProps & ViewProps & AdViewNativeEvents
 >(ComponentName);
-type AdViewType = React.Component<AdBannerViewProps> & NativeMethods;
+type AdViewType = HostInstance;
 
 export const AdBannerView = forwardRef<
   AdBannerViewHandler,
@@ -69,9 +69,10 @@ export const AdBannerView = forwardRef<
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
 
   const loadAd = useCallback(() => {
-    if (adViewRef.current) {
+    const handle = findNodeHandle(adViewRef.current);
+    if (handle != null) {
       UIManager.dispatchViewManagerCommand(
-        findNodeHandle(adViewRef.current),
+        handle,
         // @ts-ignore: Issue in RN ts defs
         UIManager.getViewManagerConfig(ComponentName).Commands.loadAd,
         []

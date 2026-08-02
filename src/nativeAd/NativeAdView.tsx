@@ -101,9 +101,10 @@ const NativeAdViewImpl = forwardRef<
 
   // Load a new ad
   const loadAd = useCallback(() => {
-    if (nativeAdViewRef.current) {
+    const handle = findNodeHandle(nativeAdViewRef.current);
+    if (handle != null) {
       UIManager.dispatchViewManagerCommand(
-        findNodeHandle(nativeAdViewRef.current),
+        handle,
         // @ts-ignore: Issue in RN ts defs
         UIManager.getViewManagerConfig(ComponentName).Commands.loadAd,
         []
