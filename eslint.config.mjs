@@ -13,7 +13,28 @@ export default defineConfig([
   // detectReactVersion() crashes with "contextOrFilename.getFilename is
   // not a function". Re-check when those plugins ship native ESLint 10
   // support and this wrapper can be dropped.
-  ...fixupConfigRules(rnConfig),
+  // These components are written as `const X = forwardRef(function X(...))`.
+  // The named function expression is what gives the component its React
+  // DevTools displayName, so it deliberately matches the const it is assigned
+  // to. Allow-listed by name rather than renaming the source, which is synced
+  // from upstream (see upstream-watch.yml). The override is merged into the
+  // block that already declares @typescript-eslint: flat config resolves a
+  // rule's plugin from the same config object, and declaring the plugin a
+  // second time fails with "Cannot redefine plugin".
+  ...fixupConfigRules(rnConfig).map((block) =>
+    block.plugins?.['@typescript-eslint']
+      ? {
+          ...block,
+          rules: {
+            ...block.rules,
+            '@typescript-eslint/no-shadow': [
+              'error',
+              { allow: ['AdBannerView', 'NativeAdView', 'NativeAdViewImpl'] },
+            ],
+          },
+        }
+      : block
+  ),
   prettierRecommended,
   {
     rules: {
