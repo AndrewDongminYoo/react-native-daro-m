@@ -4,6 +4,27 @@ import * as espree from 'espree';
 import prettierRecommended from 'eslint-plugin-prettier/recommended';
 import { defineConfig } from 'eslint/config';
 
+// eslint-plugin-react-native@5.0.0 (latest, unmaintained since 2024-12, peers
+// eslint ^9) loads its rules via context.getSourceCode(), removed in ESLint 10,
+// so every rule it provides is unusable. @react-native/eslint-config enables
+// exactly one of them (react-native/no-inline-styles), so drop the plugin
+// instead of carrying a dead override. '@react-native/*' rules come from
+// @react-native/eslint-plugin, a different package — those stay.
+const dropReactNativePlugin = ({ plugins, rules, ...block }) => {
+  if (plugins) {
+    const { 'react-native': _dropped, ...kept } = plugins;
+    block.plugins = kept;
+  }
+  if (rules) {
+    block.rules = Object.fromEntries(
+      Object.entries(rules).filter(
+        ([name]) => !name.startsWith('react-native/')
+      )
+    );
+  }
+  return block;
+};
+
 export default defineConfig([
   // fixupConfigRules shims legacy context methods (getSourceCode(),
   // getFilename()) that ESLint 10 removed. Several rules pulled in by
@@ -21,20 +42,22 @@ export default defineConfig([
   // block that already declares @typescript-eslint: flat config resolves a
   // rule's plugin from the same config object, and declaring the plugin a
   // second time fails with "Cannot redefine plugin".
-  ...fixupConfigRules(rnConfig).map((block) =>
-    block.plugins?.['@typescript-eslint']
-      ? {
-          ...block,
-          rules: {
-            ...block.rules,
-            '@typescript-eslint/no-shadow': [
-              'error',
-              { allow: ['AdBannerView', 'NativeAdView', 'NativeAdViewImpl'] },
-            ],
-          },
-        }
-      : block
-  ),
+  ...fixupConfigRules(rnConfig)
+    .map(dropReactNativePlugin)
+    .map((block) =>
+      block.plugins?.['@typescript-eslint']
+        ? {
+            ...block,
+            rules: {
+              ...block.rules,
+              '@typescript-eslint/no-shadow': [
+                'error',
+                { allow: ['AdBannerView', 'NativeAdView', 'NativeAdViewImpl'] },
+              ],
+            },
+          }
+        : block
+    ),
   prettierRecommended,
   {
     rules: {
@@ -79,12 +102,6 @@ export default defineConfig([
         // detectReactVersion() calls context.getFilename(), removed in ESLint 10.
         version: '19.2',
       },
-    },
-    rules: {
-      // eslint-plugin-react-native@5.0.0 (latest, unmaintained since 2024-12,
-      // peers eslint ^9) loads this rule via context.getSourceCode(), removed
-      // in ESLint 10. Re-enable if it ever ships ESLint 10 support.
-      'react-native/no-inline-styles': 'off',
     },
   },
 ]);
