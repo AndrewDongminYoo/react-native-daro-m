@@ -41,7 +41,6 @@ tsconfig.json
 tsconfig.build.json
 turbo.json
 .editorconfig
-.eslintrc*
 .prettierrc*
 .nvmrc
 .watchmanconfig
