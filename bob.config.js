@@ -18,7 +18,6 @@ module.exports = {
       'typescript',
       {
         project: 'tsconfig.build.json',
-        esm: true,
       },
     ],
   ],
