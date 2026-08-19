@@ -4,3 +4,11 @@
 # No active ignores. GHSA-gh4j-gqv2-49f6 (fast-xml-parser < 5.7.0) was resolved on
 # 2026-07-05 by bumping @react-native-community/cli* 20.1.0 -> 20.2.0, whose
 # cli-config-android/cli-platform-apple require fast-xml-parser ^5.3.6 (resolves to 5.9.3).
+
+[[IgnoredVulns]]
+id = "GHSA-5p2g-fcmc-qvqq"
+reason = "image-size@1.2.1 (via metro) has no patch available as of 2026-08-20. JXL/HEIF parser DoS — all versions <= 2.0.2 affected. Re-evaluate when a fix is released."
+
+[[IgnoredVulns]]
+id = "GHSA-w3rx-r6r6-pgpr"
+reason = "image-size@1.2.1 (via metro) has no patch available as of 2026-08-20. ICNS parser DoS — all versions <= 2.0.2 affected. Re-evaluate when a fix is released."
