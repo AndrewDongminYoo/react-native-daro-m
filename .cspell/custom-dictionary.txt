@@ -15,6 +15,7 @@ daro
 darom
 Dongmin
 dongminyu
+dotenv
 droom
 gradlew
 hermesc
@@ -30,6 +31,7 @@ Proguard
 QWER
 reactnativedarom
 RRGGBB
+shfmt
 Spannable
 stdlib
 Subview
