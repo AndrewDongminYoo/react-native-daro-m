@@ -24,7 +24,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
         // DaroM Gradle plugin — host-app integration responsibility per the
         // DaroM SDK's distribution model. See example/README.md → Android.
-        classpath("so.daro:daro-plugin:1.0.12")
+        classpath("so.daro:daro-plugin:2.0.4")
     }
 }
 
