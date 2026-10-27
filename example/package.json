@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@react-native/new-app-screen": "0.85.3",
-    "react": "19.2.3",
+    "react": "19.3.1",
     "react-native": "0.85.3"
   },
   "devDependencies": {
@@ -25,7 +25,7 @@
     "@react-native/jest-preset": "0.85.3",
     "@react-native/metro-config": "0.85.3",
     "@react-native/typescript-config": "0.85.3",
-    "react-native-builder-bob": "^0.41.0"
+    "react-native-builder-bob": "^0.44.1"
   },
   "engines": {
     "node": ">= 22.11.0"
