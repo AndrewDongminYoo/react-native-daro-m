@@ -111,5 +111,5 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-android:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  compileOnly "so.daro:daro-m:1.3.4"
+  compileOnly "so.daro:daro-m:1.3.16"
 }
