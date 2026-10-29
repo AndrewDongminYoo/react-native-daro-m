@@ -94,3 +94,6 @@ daro-key.txt
 **/ios-daro-key.txt
 **/android-daro-key.txt
 **/daro-key.txt
+
+# Jest-generated coverage reports
+coverage/

@@ -9,6 +9,27 @@ runs:
       with:
         node-version-file: .nvmrc
 
+    - name: Verify vendored Yarn integrity
+      shell: bash
+      run: |
+        node <<'NODE'
+        const {createHash} = require('node:crypto');
+        const {readFileSync} = require('node:fs');
+        const manager = JSON.parse(readFileSync('package.json', 'utf8')).packageManager;
+        const match = manager.match(/^yarn@(\d+\.\d+\.\d+)\+sha512\.([a-f0-9]{128})$/);
+        if (!match) throw new Error('Expected an integrity-pinned Yarn package manager');
+        const yarnPath = `.yarn/releases/yarn-${match[1]}.cjs`;
+        const config = readFileSync('.yarnrc.yml', 'utf8');
+        if (!config.split('\n').includes(`yarnPath: ${yarnPath}`)) throw new Error('Vendored Yarn path mismatch');
+        const actual = createHash('sha512').update(readFileSync(yarnPath)).digest('hex');
+        if (actual !== match[2]) throw new Error('Vendored Yarn SHA-512 mismatch');
+        console.log('Vendored Yarn integrity verified');
+        NODE
+
+    - name: Enable Corepack
+      run: corepack enable
+      shell: bash
+
     - name: Restore dependencies
       id: yarn-cache
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

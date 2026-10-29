@@ -1,0 +1,5 @@
+# Only unresolved compatible dependency findings belong here.
+# Recheck against the resolved lock and remove this entry when a patch exists.
+[[IgnoredVulns]]
+id = "GHSA-gcqx-w48m-w2h4"
+reason = "deepmerge@4.3.1, via root Jest 30.5.2 config and the example development CLI @react-native-community/cli@20.2.0, has no published fix as of 2026-10-29 (GitHub Advisory first_patched_version=null). This is a known development-tool risk, not a claim of non-reachability; native CLI execution was not tested. Explicit no-patch suppression is within the operator's campaign request. Re-evaluation owner: AndrewDongminYoo; remove once a compatible fixed release is available."
