@@ -38,7 +38,7 @@ yarn lint
 yarn test
 
 # Run a single test
-yarn test -- --testPathPattern="<file>" --testNamePattern="<name>"
+yarn test --testPathPatterns="<file>" --testNamePattern="<name>"
 
 # Clean all build artifacts
 yarn clean
@@ -137,3 +137,30 @@ diff -wru src/ /tmp/upstream/package/src/   # ignore whitespace; surface functio
 echo "<new-version>" > .upstream-version
 yarn typecheck && yarn lint && yarn test && yarn prepare
 ```
+
+## Maintenance gates and limits
+
+Use Node 24.22.2 and vendored Yarn 4.18.1; run `yarn install --immutable` before the declared lint, typecheck and library build gates.
+The CI composite verifies the vendored path and SHA-512 before its first Yarn command.
+Keep `approvedGitRepositories: []`, `enableScripts: false` and `npmMinimalAgeGate: 1440` explicit so a Yarn migration cannot restore permissive legacy settings.
+Dependency scripts remain disabled; workspace builds such as `yarn prepare` are executed explicitly.
+The existing security-patched `qs` resolution and checksum remain unchanged under that policy.
+
+Preserve root RN 0.86.2 and example RN 0.85.3, their renderer-matching React 19.2.3, the native SDK/plugin pins and the five fork patches.
+Keep Babel 7, TypeScript below 6.1 and the current Bob families until their consumers support a migration.
+The explicit TypeScript ESLint parser satisfies the existing plugin's peer dependency; the existing ESLint 10 compatibility shim is retained, and lint was verified with it.
+There is no supported Web build script; the release workflow contains only the library and native platform jobs.
+
+The CI Jest command is `yarn test --maxWorkers=2 --coverage --passWithNoTests`.
+It currently discovers no project tests, so exit zero is not test coverage.
+The local Watchman crawl failed and Jest used its Node fallback; no Watchman or device repair is part of this change.
+Generated `coverage/` files are excluded from Git and ESLint source linting.
+
+Run `python3 -B .trunk/configs/tests/test_trufflehog_to_sarif.py` for 17 filesystem JSONL reader cases, then `trunk check --all --no-fix` for the approved full maintenance scan.
+The reader retains native paths for Trunk 1.25.0, code-point columns and file-level findings for encoded, unreadable or oversized sources.
+It requests at most 1 MiB plus a sentinel byte per file and retains eight cached sources; result memory and blocking filesystem I/O remain outside that limit.
+Provider verification and scanner updates are disabled during scanning, and scanner input errors fail the gate.
+Only the integrity-verified CLI's bundled help/setting strings and generated Yarn archive checksums are excluded from TruffleHog; dependency vulnerability coverage remains active.
+OSV 2.7.0 cannot extract the CocoaPods lock, so only that scanner skips that target; its independent offline secret scan is clean.
+The Ruby lock is scanned separately, and unresolved `deepmerge` risk is explicit in root `osv-scanner.toml`.
+Native builds, example rendering, actual ad delivery, device behavior and package publishing remain unverified by these gates.
