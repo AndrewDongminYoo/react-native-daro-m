@@ -1,3 +1,6 @@
 *.pbxproj -text
 # specific for windows script files
 *.bat text eol=crlf
+
+# Preserve the integrity-verified upstream CLI, including literal string whitespace.
+.yarn/releases/yarn-4.18.1.cjs -whitespace

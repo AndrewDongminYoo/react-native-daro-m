@@ -97,14 +97,32 @@ await RewardedAd.showAd(unitId, customData);
 ## Development
 
 ```sh
-yarn install
+yarn install --immutable
 yarn prepare      # build lib/ via react-native-builder-bob
 yarn typecheck
 yarn lint
-yarn test
+yarn test --maxWorkers=2 --coverage --passWithNoTests
 ```
 
 See [`CLAUDE.md`](./CLAUDE.md) for architecture notes.
+
+Use Node 24.22.2 and the integrity-pinned vendored Yarn 4.18.1.
+Root React 19.2.3 matches the installed React Native renderer; the existing RN and native SDK families remain pinned.
+Babel 7, TypeScript 6.0 and the current Bob families remain within their compatible toolchain ranges.
+The example targets Android and iOS; no Web build command or Web release job is supported.
+
+CI verifies the vendored CLI path and SHA-512 before running Yarn.
+The repository explicitly keeps Yarn's default release-age, script and Git-source protections; workspace build commands are still run explicitly.
+The current Jest command finds no project tests and is allowed to exit successfully; this is not unit-test coverage.
+Library build, lint and typecheck remain separate gates, and generated coverage reports are excluded from source linting.
+
+Run `python3 -B .trunk/configs/tests/test_trufflehog_to_sarif.py` for the 17 offline scanner-reader cases and `trunk check --all --no-fix` for a full maintenance scan.
+The reader limits source context to 1 MiB plus a sentinel byte and eight cached files; that does not establish a universal RSS bound or filesystem timeout.
+TruffleHog does not verify candidate credentials with providers.
+The official CLI's bundled help/setting strings and generated lock checksums have narrowly scoped secret-scanner exceptions; the lock remains covered by OSV.
+`osv-scanner.toml` records the unresolved `deepmerge` development-tool advisory, whose risk is retained rather than declared unreachable.
+The obsolete `image-size` exceptions were removed after that package disappeared from the resolved graph.
+Native builds, devices, advertising-service integration and publishing require their own verification and are not implied by the JavaScript gates.
 
 ## Upstream tracking
 

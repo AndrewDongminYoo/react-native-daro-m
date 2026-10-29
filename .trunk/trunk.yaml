@@ -14,7 +14,7 @@ runtimes:
   enabled:
     - go@1.21.0
     - java@13.0.11
-    - node@22.16.0
+    - node@22.23.4
     - python@3.14.4
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
@@ -24,28 +24,50 @@ lint:
     - taplo
     - trivy
   ignore:
-    - linters: [osv-scanner, trufflehog]
+    # OSV 2.7.0 has no extractor for this CocoaPods lock (direct scan exits 127).
+    # Its independent offline secret scan is clean, so retain secret coverage.
+    - linters: [osv-scanner]
       paths: [example/ios/Podfile.lock]
+    # Official vendored CLI hash is verified before CI installation; its help
+    # example UUID and configuration identifier trigger credential detectors.
+    # The generated lock findings are SHA-512 archive checksum fragments.
+    # Keep the lock under osv-scanner; this exception is secret-scanner-only.
+    - linters: [trufflehog]
+      paths: [.yarn/releases/yarn-4.18.1.cjs, yarn.lock]
     - linters: [shellcheck, shfmt]
       paths: [example/android/gradlew]
     - linters: [markdownlint]
       paths: [.github/**/*.md]
   enabled:
     - actionlint@1.7.12
-    - checkov@3.3.30
+    - checkov@3.4.0
     - eslint@10.13.0
     - git-diff-check
     - ktlint@1.8.0
     - markdownlint@0.50.0
-    - osv-scanner@2.4.0
-    - oxipng@10.1.1
+    - osv-scanner@2.7.0
+    - oxipng@10.2.1
     - pinact@4.1.1!:
         commands: [lint, upgrade]
     - prettier@3.9.10
     - shellcheck@0.11.0
-    - shfmt@3.13.1
-    - trufflehog@3.95.8
+    - shfmt@3.14.1
+    - trufflehog@3.99.7
     - yamllint@1.38.0
+  definitions:
+    - name: pinact
+      commands:
+        - name: upgrade
+          enabled: true
+    - name: trufflehog
+      commands:
+        - name: lint
+          run: trufflehog filesystem --json --fail --fail-on-scan-errors --no-verification --no-update ${target}
+          direct_configs:
+            - .trunk/configs/trufflehog_to_sarif.py
+          parser:
+            runtime: python
+            run: python3 .trunk/configs/trufflehog_to_sarif.py
 actions:
   enabled:
     - trunk-announce
