@@ -2,7 +2,7 @@
 # To learn more about the format of this file, see https://docs.trunk.io/reference/trunk-yaml
 version: 0.1
 cli:
-  version: 1.25.0
+  version: 1.29.0
 # Trunk provides extensibility via plugins. (https://docs.trunk.io/plugins)
 plugins:
   sources:
@@ -18,11 +18,40 @@ runtimes:
     - python@3.14.4
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
+  definitions:
+    - name: pinact
+      commands:
+        - name: upgrade
+          enabled: true
+    - name: trufflehog
+      commands:
+        - name: lint
+          run: trufflehog filesystem --json --fail --fail-on-scan-errors --no-verification --no-update ${target}
+          direct_configs:
+            - .trunk/configs/trufflehog_to_sarif.py
+          parser:
+            runtime: python
+            run: python3 .trunk/configs/trufflehog_to_sarif.py
   disabled:
     - dotenv-linter
     - grype
     - taplo
     - trivy
+  enabled:
+    - actionlint@1.7.12
+    - checkov@3.4.3
+    - eslint@10.14.0
+    - git-diff-check
+    - ktlint@1.8.0
+    - markdownlint@0.50.0
+    - osv-scanner@2.7.0
+    - oxipng@10.2.1
+    - pinact@4.1.1!
+    - prettier@3.9.10
+    - shellcheck@0.11.0
+    - shfmt@3.14.1
+    - trufflehog@3.99.8
+    - yamllint@1.38.0
   ignore:
     # OSV 2.7.0 has no extractor for this CocoaPods lock (direct scan exits 127).
     # Its independent offline secret scan is clean, so retain secret coverage.
@@ -38,36 +67,6 @@ lint:
       paths: [example/android/gradlew]
     - linters: [markdownlint]
       paths: [.github/**/*.md]
-  enabled:
-    - actionlint@1.7.12
-    - checkov@3.4.0
-    - eslint@10.13.0
-    - git-diff-check
-    - ktlint@1.8.0
-    - markdownlint@0.50.0
-    - osv-scanner@2.7.0
-    - oxipng@10.2.1
-    - pinact@4.1.1!:
-        commands: [lint, upgrade]
-    - prettier@3.9.10
-    - shellcheck@0.11.0
-    - shfmt@3.14.1
-    - trufflehog@3.99.7
-    - yamllint@1.38.0
-  definitions:
-    - name: pinact
-      commands:
-        - name: upgrade
-          enabled: true
-    - name: trufflehog
-      commands:
-        - name: lint
-          run: trufflehog filesystem --json --fail --fail-on-scan-errors --no-verification --no-update ${target}
-          direct_configs:
-            - .trunk/configs/trufflehog_to_sarif.py
-          parser:
-            runtime: python
-            run: python3 .trunk/configs/trufflehog_to_sarif.py
 actions:
   enabled:
     - trunk-announce
