@@ -3173,44 +3173,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turbo/darwin-64@npm:2.11.10":
-  version: 2.11.10
-  resolution: "@turbo/darwin-64@npm:2.11.10"
+"@turbo/darwin-64@npm:2.11.11":
+  version: 2.11.11
+  resolution: "@turbo/darwin-64@npm:2.11.11"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/darwin-arm64@npm:2.11.10":
-  version: 2.11.10
-  resolution: "@turbo/darwin-arm64@npm:2.11.10"
+"@turbo/darwin-arm64@npm:2.11.11":
+  version: 2.11.11
+  resolution: "@turbo/darwin-arm64@npm:2.11.11"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/linux-64@npm:2.11.10":
-  version: 2.11.10
-  resolution: "@turbo/linux-64@npm:2.11.10"
+"@turbo/linux-64@npm:2.11.11":
+  version: 2.11.11
+  resolution: "@turbo/linux-64@npm:2.11.11"
   conditions: (os=android | os=linux) & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/linux-arm64@npm:2.11.10":
-  version: 2.11.10
-  resolution: "@turbo/linux-arm64@npm:2.11.10"
+"@turbo/linux-arm64@npm:2.11.11":
+  version: 2.11.11
+  resolution: "@turbo/linux-arm64@npm:2.11.11"
   conditions: (os=android | os=linux) & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/windows-64@npm:2.11.10":
-  version: 2.11.10
-  resolution: "@turbo/windows-64@npm:2.11.10"
+"@turbo/windows-64@npm:2.11.11":
+  version: 2.11.11
+  resolution: "@turbo/windows-64@npm:2.11.11"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/windows-arm64@npm:2.11.10":
-  version: 2.11.10
-  resolution: "@turbo/windows-arm64@npm:2.11.10"
+"@turbo/windows-arm64@npm:2.11.11":
+  version: 2.11.11
+  resolution: "@turbo/windows-arm64@npm:2.11.11"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -3780,9 +3780,9 @@ __metadata:
   linkType: hard
 
 "ansi-regex@npm:^6.2.2":
-  version: 6.5.0
-  resolution: "ansi-regex@npm:6.5.0"
-  checksum: 10/17e56f2faed4422292642414de88d693cbaf6cfea38479f4bd9ac6d382b0dadaa1d12857b018d3ea1a7f7a81848e3125960b11f5615137f4f01c3d5e3a0809d2
+  version: 6.6.0
+  resolution: "ansi-regex@npm:6.6.0"
+  checksum: 10/101ea2a09dd4ab8a2329764a727280c76f38211c95156abd902a15de0a06939d02ca03075c873ff823459ff083a46e4a3c5aba66c7a4394eddfdddfc933e6fdc
   languageName: node
   linkType: hard
 
@@ -4250,11 +4250,11 @@ __metadata:
   linkType: hard
 
 "baseline-browser-mapping@npm:^2.11.33":
-  version: 2.11.35
-  resolution: "baseline-browser-mapping@npm:2.11.35"
+  version: 2.11.36
+  resolution: "baseline-browser-mapping@npm:2.11.36"
   bin:
     baseline-browser-mapping: dist/cli.cjs
-  checksum: 10/ef6c4bcfaf57bde9f7c0b45ed8c7e20ec22fe3d231bf3ac40587106a3f291de97786f527140d48910b11a18adf30fa7c9d7839c56f47f58e3f8ef9a91842751b
+  checksum: 10/11ae0b4632b850092f5c68b84b33a1621dda2c5ababb64dfd6ca3804b6b1c295757d0a15eaba3d246a9dad7fa8994abfc98544bc812933c8f802a9b6d56861d5
   languageName: node
   linkType: hard
 
@@ -4287,30 +4287,30 @@ __metadata:
   linkType: hard
 
 "brace-expansion@npm:^1.1.7":
-  version: 1.1.21
-  resolution: "brace-expansion@npm:1.1.21"
+  version: 1.1.22
+  resolution: "brace-expansion@npm:1.1.22"
   dependencies:
     balanced-match: "npm:^1.0.0"
     concat-map: "npm:0.0.1"
-  checksum: 10/6c0ed34107cb3bd3f44c01d90ec8c01baa3ed75b7755617e2e5797b5908bbf20b313edf575612b200a783b84c7d1826aec2f7a2f03de9905bbfae5dc3dea6a95
+  checksum: 10/8d8705570ee95877a2e3e1e90904785f394bb415670b5ea4faac343ecc3e6e1a4d1b736b40c2dcc4774c5dcb04ac6afd456afc081686faf99c9dcf1d3f4b76ff
   languageName: node
   linkType: hard
 
 "brace-expansion@npm:^2.0.2":
-  version: 2.1.7
-  resolution: "brace-expansion@npm:2.1.7"
+  version: 2.1.8
+  resolution: "brace-expansion@npm:2.1.8"
   dependencies:
     balanced-match: "npm:^1.0.0"
-  checksum: 10/4763be07b688136db4f98f71ab96c4a1a73b6785f69864c130c748f4429be961c6a9a4129c0a81aad4f9cfb08e31a3cf2809b2427509bf2990d1490b7b5dd2d0
+  checksum: 10/fdc4d9c7597395ecd670246098823cb3cb72736fbb3252a3103a7ec5928ab31e7de0623e334af0665018a9c57ad48c28e99897627547ba38f254e52c384a74ed
   languageName: node
   linkType: hard
 
 "brace-expansion@npm:^5.0.8":
-  version: 5.0.12
-  resolution: "brace-expansion@npm:5.0.12"
+  version: 5.0.13
+  resolution: "brace-expansion@npm:5.0.13"
   dependencies:
     balanced-match: "npm:^4.0.2"
-  checksum: 10/65b550f1836e3b43f512f12afbc3be96616eee5c353e16d70181b7dffec8c08beabffb51d69a3bbdb27d675840725cbab025fda9d10716b5cda7dd864dc7bc4a
+  checksum: 10/a2c4dc2481b7161c0c24875d23c38da209942a32cef4aad6fcab93da8f9bdd8b204f2777f7a803d7199f97507bf1d78c5664c17062d179aeda5f222b1d2bfbae
   languageName: node
   linkType: hard
 
@@ -4438,9 +4438,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001819":
-  version: 1.0.30001823
-  resolution: "caniuse-lite@npm:1.0.30001823"
-  checksum: 10/4db65cc4e307dba3b95368295542774df4dd97005546f031a0e44387aeacd9786b87264e194ea15375f6a91d996543c46c42b4c0e5a642faf1c3f8a861145bc4
+  version: 1.0.30001826
+  resolution: "caniuse-lite@npm:1.0.30001826"
+  checksum: 10/7a655e45de96666f1207165263d41298e3ce9af845acf432d61533b8a1b08ef3c2cc70202691dc1aabf22ecffb12bc062ef122b9307282a834f65f4fe3096013
   languageName: node
   linkType: hard
 
@@ -4510,9 +4510,9 @@ __metadata:
   linkType: hard
 
 "ci-info@npm:^4.2.0":
-  version: 4.4.0
-  resolution: "ci-info@npm:4.4.0"
-  checksum: 10/dfded0c630267d89660c8abb988ac8395a382bdfefedcc03e3e2858523312c5207db777c239c34774e3fcff11f015477c19d2ac8a58ea58aa476614a2e64f434
+  version: 4.5.0
+  resolution: "ci-info@npm:4.5.0"
+  checksum: 10/7c2878b08b0d4ae0782eb8be6463710f18c0dc956dfa8f2011e4a84263a7c01496b982885bc683a455831b5244d4d4555e152b691ace73a1670cba6e98c2a76e
   languageName: node
   linkType: hard
 
@@ -4994,9 +4994,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.5.464":
-  version: 1.5.478
-  resolution: "electron-to-chromium@npm:1.5.478"
-  checksum: 10/5b4013c3429b8e0ddb1f145f2bca5ea2d09ea4b3f1f180ef48a1863bc186e09a8bb132887cbb00b688289041c77b374a5ff6838e1623b3e38b1a444d428fb7c9
+  version: 1.5.481
+  resolution: "electron-to-chromium@npm:1.5.481"
+  checksum: 10/92698890fe4db97ff7db40e92d867e0231c42e2abea3752196786b94e7899a05fa9cc9caeacd6931a0050f4f871e49571545ababe9bc8fc243c4a7250cd78664
   languageName: node
   linkType: hard
 
@@ -5029,16 +5029,16 @@ __metadata:
   linkType: hard
 
 "encodeurl@npm:~1.0.2":
-  version: 1.0.2
-  resolution: "encodeurl@npm:1.0.2"
-  checksum: 10/e50e3d508cdd9c4565ba72d2012e65038e5d71bdc9198cb125beb6237b5b1ade6c0d343998da9e170fb2eae52c1bed37d4d6d98a46ea423a0cddbed5ac3f780c
+  version: 1.0.3
+  resolution: "encodeurl@npm:1.0.3"
+  checksum: 10/a7dd4744ce04e5ac7a77023533a912610a91f6be1dcd30214d6c1f95015bcb53adfc1d0ce7faebcb1557a1cf66b4e70bcb2a050f83335666cc265a5fe536e1d0
   languageName: node
   linkType: hard
 
 "encodeurl@npm:~2.0.0":
-  version: 2.0.1
-  resolution: "encodeurl@npm:2.0.1"
-  checksum: 10/667f1f8e35c74e1abf2b390a56156626912e57fdc791c4495b38fcba8bced44dc375e16f843cb30fba58024899e969895f06ba87dc3499a1277407ef84a452c1
+  version: 2.0.2
+  resolution: "encodeurl@npm:2.0.2"
+  checksum: 10/c548244b79cff2160a23666cce01f2a7304d5ff87aae975c6ec3bc9c0bd36aca1d5b939026d68b052d9d6b00d2e58f18e1f860f9e7a828f85f9600d089182b4c
   languageName: node
   linkType: hard
 
@@ -8792,11 +8792,11 @@ __metadata:
   linkType: hard
 
 "prettier@npm:^3.9.10":
-  version: 3.9.10
-  resolution: "prettier@npm:3.9.10"
+  version: 3.10.0
+  resolution: "prettier@npm:3.10.0"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10/5d0118add4b44eb9d50c114f5c525451cc92be9da300ad0552787472535a3f23884baed3223d9b577bb7d1152eb58aeccfcc2b4541c0cf2274c0b4d328e36834
+  checksum: 10/c87442be0b480bc968cbd44d5984fd2ccf1d0b2a94aa3f35ffccc8751cf25751360adce3884d08b0f52c403fa75bfdf64bacdd2802d9fc1e0efee7456cf4ef36
   languageName: node
   linkType: hard
 
@@ -9978,15 +9978,15 @@ __metadata:
   linkType: hard
 
 "tar@npm:^7.5.7":
-  version: 7.5.22
-  resolution: "tar@npm:7.5.22"
+  version: 7.5.23
+  resolution: "tar@npm:7.5.23"
   dependencies:
     "@isaacs/fs-minipass": "npm:^4.0.0"
     chownr: "npm:^3.0.0"
     minipass: "npm:^7.1.2"
     minizlib: "npm:^3.1.0"
     yallist: "npm:^5.0.0"
-  checksum: 10/129606384b3c895f422aaca48bf316357be6dc7aa35c1066c3f06c28acfff0be5b356e1b0a0be7c53a7a8945534ac06cec6d8e296d170d8a09c8bff67b29300e
+  checksum: 10/b8550890576aa494ae1e3bfa85040bb302fb592fd9c64de9972c937ee9a54b3302cac5906d4c81cc0855eabd23b8ef3d0f0d90e499d9d7bc8d17fed3aa81d4f1
   languageName: node
   linkType: hard
 
@@ -10083,15 +10083,15 @@ __metadata:
   linkType: hard
 
 "turbo@npm:^2.11.10":
-  version: 2.11.10
-  resolution: "turbo@npm:2.11.10"
+  version: 2.11.11
+  resolution: "turbo@npm:2.11.11"
   dependencies:
-    "@turbo/darwin-64": "npm:2.11.10"
-    "@turbo/darwin-arm64": "npm:2.11.10"
-    "@turbo/linux-64": "npm:2.11.10"
-    "@turbo/linux-arm64": "npm:2.11.10"
-    "@turbo/windows-64": "npm:2.11.10"
-    "@turbo/windows-arm64": "npm:2.11.10"
+    "@turbo/darwin-64": "npm:2.11.11"
+    "@turbo/darwin-arm64": "npm:2.11.11"
+    "@turbo/linux-64": "npm:2.11.11"
+    "@turbo/linux-arm64": "npm:2.11.11"
+    "@turbo/windows-64": "npm:2.11.11"
+    "@turbo/windows-arm64": "npm:2.11.11"
   dependenciesMeta:
     "@turbo/darwin-64":
       optional: true
@@ -10107,7 +10107,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 10/1aea290655d521785eff88bc940836e631e4ad68ceb13d1f97f848a42ef3f6dc6a49a17c6c60eeb93747a77a0bb5fbff85d8ac1f28c13b236edd6f89e6cdbb72
+  checksum: 10/a5a647eccfc2ffea002f719e3cae21cb84f507aa86749245d930aa6f310ceaf8637c93396dff759f12c84a50a89c5b1268c59f566d2ef5e3a79557b540ce84b6
   languageName: node
   linkType: hard
 
